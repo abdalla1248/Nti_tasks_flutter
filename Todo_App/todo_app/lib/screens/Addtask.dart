@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo_app/widgets/custom_text_field.dart';
 
 class AddTaskScreen extends StatefulWidget {
   final List<Map<String, dynamic>> tasks;
@@ -19,21 +20,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   String selectedType = "Home";
 
   final List<Map<String, dynamic>> taskTypes = [
-    {
-      "title": "Home",
-      "icon": Icons.home,
-      "color": Colors.pink,
-    },
-    {
-      "title": "Personal",
-      "icon": Icons.person,
-      "color": Colors.green,
-    },
-    {
-      "title": "Work",
-      "icon": Icons.work,
-      "color": Colors.black,
-    },
+    {"title": "Home", "icon": Icons.home, "color": Colors.pink},
+    {"title": "Personal", "icon": Icons.person, "color": Colors.green},
+    {"title": "Work", "icon": Icons.work, "color": Colors.black},
   ];
 
   @override
@@ -48,10 +37,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
-        title: const Text(
-          'Add Task',
-          style: TextStyle(color: Colors.black),
-        ),
+        title: const Text('Add Task', style: TextStyle(color: Colors.black)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -69,20 +55,27 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Title
-            _buildTextInput("Task Title", _titleController),
+            CustomTextField(
+              hintText: "Task Title",
+              controller: _titleController,
+            ),
             const SizedBox(height: 16),
 
-            // Description
-            _buildTextInput("Description", _descController, maxLines: 4),
+            CustomTextField(
+              
+              hintText: "Description",
+              controller: _descController,
+              maxLines: 4,
+            ),
             const SizedBox(height: 16),
 
-            // Task type dropdown
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: _boxDecoration(),
+              
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
+                  dropdownColor: Colors.white,
                   isExpanded: true,
                   value: selectedType,
                   icon: const Icon(Icons.arrow_drop_down),
@@ -104,30 +97,21 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Text(
-                            type["title"],
-                            style: const TextStyle(fontSize: 16),
-                          ),
+                          Text(type["title"], style: const TextStyle(fontSize: 16)),
                         ],
                       ),
                     );
                   }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedType = value!;
-                    });
-                  },
+                  onChanged: (value) => setState(() => selectedType = value!),
                 ),
               ),
             ),
             const SizedBox(height: 16),
 
-            // Date + Time Picker
             GestureDetector(
               onTap: _pickDateTime,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: _boxDecoration(),
                 child: Row(
                   children: [
@@ -150,56 +134,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             ),
             const SizedBox(height: 30),
 
-            // Add Task Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Validate inputs
-                  if (_titleController.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please enter a task title'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                    return;
-                  }
-
-                  if (selectedDate == null || selectedTime == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please select date and time'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                    return;
-                  }
-
-                  // Create new task
-                  final newTask = {
-                    "title": _titleController.text.trim(),
-                    "description": _descController.text.trim(),
-                    "type": selectedType,
-                    "date":
-                        "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}",
-                    "time": selectedTime!.format(context),
-                    "isCompleted": false,
-                    "icon": _getIconForType(selectedType),
-                    "color": _getColorForType(selectedType),
-                  };
-
-                  // Show success message
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Task added successfully!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-
-                  // Return the new task to HomePage
-                  Navigator.pop(context, newTask);
-                },
+                onPressed: _submitTask,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -209,7 +147,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 ),
                 child: const Text(
                   'Add Task',
-                  style: TextStyle(fontSize: 16,color: Colors.white),
+                  style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
             ),
@@ -219,24 +157,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     );
   }
 
-  // Text input widget
-  Widget _buildTextInput(String hint, TextEditingController controller,
-      {int maxLines = 1}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: _boxDecoration(),
-      child: TextField(
-        controller: controller,
-        maxLines: maxLines,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: hint,
-        ),
-      ),
-    );
-  }
-
-  // Box decoration reuse
   BoxDecoration _boxDecoration() {
     return BoxDecoration(
       color: Colors.white,
@@ -246,12 +166,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           color: Colors.black12,
           blurRadius: 4,
           offset: Offset(0, 2),
-        )
+        ),
       ],
     );
   }
 
-  // Date picker
   Future<void> _pickDateTime() async {
     final DateTime? date = await showDatePicker(
       context: context,
@@ -275,27 +194,46 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     }
   }
 
-  // Convert month number to name
+  void _submitTask() {
+    if (_titleController.text.trim().isEmpty) {
+      _showSnackBar('Please enter a task title', Colors.red);
+      return;
+    }
+
+    if (selectedDate == null || selectedTime == null) {
+      _showSnackBar('Please select date and time', Colors.red);
+      return;
+    }
+
+    final newTask = {
+      "title": _titleController.text.trim(),
+      "description": _descController.text.trim(),
+      "type": selectedType,
+      "date": "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}",
+      "time": selectedTime!.format(context),
+      "isCompleted": false,
+      "icon": _getIconForType(selectedType),
+      "color": _getColorForType(selectedType),
+    };
+
+    _showSnackBar('Task added successfully!', Colors.green);
+    Navigator.pop(context, newTask);
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: color),
+    );
+  }
+
   String _monthName(int month) {
     const months = [
-      "",
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December"
+      "", "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
     ];
     return months[month];
   }
 
-  // Helper methods for task type
   IconData _getIconForType(String type) {
     switch (type) {
       case "Home":

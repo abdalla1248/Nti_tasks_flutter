@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:todo_app/pages/EditTaskPage.dart';
+import 'package:todo_app/widgets/custom_text_field.dart';
 
 class ViewTasksPage extends StatefulWidget {
   final List<Map<String, dynamic>> tasks;
@@ -338,19 +339,14 @@ class _ViewTasksPageState extends State<ViewTasksPage> {
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue, width: 2),
+                borderRadius: BorderRadius.circular(32),
+                
               ),
-              child: TextField(
+              child: CustomTextField(
                 controller: _searchController,
+                hintText: "Search...",
                 onChanged: _searchTasks,
-                decoration: const InputDecoration(
-                  hintText: "Search...",
-                  border: InputBorder.none,
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  suffixIcon: Icon(Icons.search, color: Colors.grey),
-                ),
+                suffixIcon: Icons.search,
               ),
             ),
           ),

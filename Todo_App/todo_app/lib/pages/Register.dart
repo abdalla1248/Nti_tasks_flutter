@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:todo_app/pages/HomePage.dart';
 import 'package:todo_app/pages/Login.dart';
 
+import '../widgets/custom_text_field.dart';
+
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -101,56 +103,46 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Username Field
-                    TextField(
+                    CustomTextField(
+                      labelText: 'Username',
+                      hintText: 'Enter your username',
+                      prefixIcon: Icons.person,
                       controller: _usernameController,
-                      decoration: InputDecoration(
-                        labelText: 'Username',
-                        border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.person),
-                        errorText: _usernameError,
-                      ),
+                      errorText: _usernameError,
+                      obscureText: false,
+                      obscuringCharacter: '*',
                     ),
+
                     const SizedBox(height: 20),
 
-                    // Password Field
-                    TextField(
+                    CustomTextField(
+                      labelText: 'Password',
+                      hintText: 'Enter your password',
+                      prefixIcon: Icons.lock,
                       controller: _passwordController,
+                      errorText: _passwordError,
                       obscureText: _obscurePassword,
                       obscuringCharacter: '*',
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.lock),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                        errorText: _passwordError,
-                      ),
+                      showVisibilityToggle: true,
+                      onVisibilityToggle: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
                     ),
+
                     const SizedBox(height: 20),
 
-                    // Confirm Password Field
-                    TextField(
+                    CustomTextField(
+                      labelText: 'Confirm Password',
+                      hintText: 'Re-enter password',
+                      prefixIcon: Icons.lock,
                       controller: _confirmPasswordController,
+                      errorText: _confirmPasswordError,
                       obscureText: true,
                       obscuringCharacter: '*',
-                      decoration: InputDecoration(
-                        labelText: 'Confirm Password',
-                        border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.lock),
-                        errorText: _confirmPasswordError,
-                      ),
                     ),
+
                     const SizedBox(height: 30),
 
                     // Register Button

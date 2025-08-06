@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:todo_app/pages/HomePage.dart';
 import 'package:todo_app/pages/Register.dart';
 
+import '../widgets/custom_text_field.dart';
+
 class Login extends StatefulWidget {
   const Login({super.key});
 
@@ -79,53 +81,35 @@ class _LoginState extends State<Login> {
                 fit: BoxFit.cover,
               ),
               const SizedBox(height: 30),
-
-              // Email Field
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: TextField(
+                child: CustomTextField(
                   controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'example@gmail.com',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.email),
-                    errorText: _emailError,
-                  ),
+                  labelText: 'Email',
+                  hintText: 'example@gmail.com',
+                  prefixIcon: Icons.email,
+                  errorText: _emailError,
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Password Field
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: TextField(
+                child: CustomTextField(
+                  labelText: 'Password',
                   controller: _passwordController,
+                  prefixIcon: Icons.lock,
                   obscureText: _obscurePassword,
                   obscuringCharacter: '*',
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.lock),
-                    errorText: _passwordError,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
-                  ),
+                  errorText: _passwordError,
+                  showVisibilityToggle: true,
+                  onVisibilityToggle: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
                 ),
               ),
               const SizedBox(height: 30),
-
-              // Login Button
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: SizedBox(

@@ -225,8 +225,7 @@ class _HomePageState extends State<HomePage> {
                     itemCount: _inProgressTasks.length,
                     itemBuilder: (context, index) {
                       final task = _inProgressTasks[index];
-                      bool isWorkTask =
-                          task["type"] == "Work"; // Flag for work tasks
+                      bool isWorkTask = task["type"] == "Work";
 
                       return Container(
                         width: 250,

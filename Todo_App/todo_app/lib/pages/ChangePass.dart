@@ -19,7 +19,6 @@ class _ChangepassState extends State<Changepass> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Top banner image
               SizedBox(
                 width: double.infinity,
                 height: 200,
@@ -29,30 +28,38 @@ class _ChangepassState extends State<Changepass> {
                 ),
               ),
               const SizedBox(height: 30),
-
+          
               // Password fields
-              CustomTextField(
-                labelText: 'Old password',
-                obscureText: true,
-                obscuringCharacter: '*',
-                prefixIcon: Icons.lock,
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CustomTextField(
+                  labelText: 'Old password',
+                  obscureText: true,
+                  obscuringCharacter: '*',
+                  prefixIcon: Icons.lock,
+                ),
               ),
-              CustomTextField(
-                labelText: 'New password',
-                obscureText: true,
-                obscuringCharacter: '*',
-                prefixIcon: Icons.lock,
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CustomTextField(
+                  labelText: 'New password',
+                  obscureText: true,
+                  obscuringCharacter: '*',
+                  prefixIcon: Icons.lock,
+                ),
               ),
-              CustomTextField(
-                labelText: 'Confirm password',
-                obscureText: true,
-                obscuringCharacter: '*',
-                prefixIcon: Icons.lock,
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CustomTextField(
+                  labelText: 'Confirm password',
+                  obscureText: true,
+                  obscuringCharacter: '*',
+                  prefixIcon: Icons.lock,
+                ),
               ),
-
+          
               const SizedBox(height: 40),
-
-              // Save button
+          
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Container(
@@ -84,8 +91,6 @@ class _ChangepassState extends State<Changepass> {
                           backgroundColor: Colors.green,
                         ),
                       );
-
-                      // Navigate to HomePage after a short delay
                       Future.delayed(const Duration(seconds: 1), () {
                         Navigator.pushReplacement(
                           context,
