@@ -4,8 +4,9 @@ import 'package:todo_app/screens/Addtask.dart';
 import 'package:todo_app/pages/ViewTasksPage.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.name});
+  const HomePage({super.key, required this.name, this.password});
   final String name;
+  final String? password;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -84,8 +85,11 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>
-                                  Profilepage(name: widget.name)),
+                            builder: (context) => Profilepage(
+                              name: widget.name,
+                              password: widget.password,
+                            ),
+                          ),
                         );
                       },
                       child: CircleAvatar(

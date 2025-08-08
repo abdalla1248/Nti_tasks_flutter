@@ -8,11 +8,12 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText;
   final String? obscuringCharacter;
   final TextEditingController? controller;
-  final String? errorText;
+  final String? errorText; // still usable for manual error messages
   final VoidCallback? onVisibilityToggle;
   final bool showVisibilityToggle;
   final ValueChanged<String>? onChanged;
   final int maxLines;
+  final String? Function(String?)? validator;
 
   const CustomTextField({
     super.key,
@@ -28,16 +29,18 @@ class CustomTextField extends StatelessWidget {
     this.onChanged,
     this.suffixIcon,
     this.maxLines = 1,
+    this.validator,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       obscureText: obscureText,
       obscuringCharacter: obscuringCharacter ?? '*',
       onChanged: onChanged,
       maxLines: maxLines,
+      validator: validator,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
@@ -49,7 +52,7 @@ class CustomTextField extends StatelessWidget {
           ),
         ),
         prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-        errorText: errorText,
+        errorText: errorText, // keep this if you want to support manual errors too
         suffixIcon: showVisibilityToggle
             ? IconButton(
                 icon: Icon(

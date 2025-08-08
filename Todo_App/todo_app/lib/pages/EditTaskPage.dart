@@ -93,7 +93,6 @@ class _EditTaskPageState extends State<EditTaskPage> {
     widget.onDelete(widget.taskIndex);
     Navigator.pop(context);
   }
-
   String _monthName(int month) {
     const months = [
       '',

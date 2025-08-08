@@ -5,8 +5,9 @@ import 'package:todo_app/widgets/ProfileCard.dart';
 import 'package:todo_app/screens/UserUpdate.dart';
 
 class Profilepage extends StatefulWidget {
-  const Profilepage({super.key, required this.name});
+  const Profilepage({super.key, required this.name, this.password});
   final String name;
+  final String ? password;
 
   @override
   State<Profilepage> createState() => _ProfilepageState();
@@ -66,7 +67,7 @@ class _ProfilepageState extends State<Profilepage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Changepass(name: widget.name),
+                    builder: (context) => Changepass(name: widget.name,password:  widget.password),
                   ),
                 );
               },

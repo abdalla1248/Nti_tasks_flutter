@@ -21,48 +21,30 @@ class _LoginState extends State<Login> {
   String? _emailError;
   String? _passwordError;
 
-  void validateAndLogin() {
-    setState(() {
-      _emailError = null;
-      _passwordError = null;
-    });
-
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-
-    bool isValid = true;
-
-    if (email.isEmpty || !email.contains('@')) {
-      setState(() {
-        _emailError = 'Please enter a valid email';
-      });
-      isValid = false;
-    }
-
-    if (password.isEmpty) {
-      setState(() {
-        _passwordError = 'Please enter a password';
-      });
-      isValid = false;
-    } else if (password.length < 6) {
-      setState(() {
-        _passwordError = 'Password must be at least 6 characters';
-      });
-      isValid = false;
-    }
-
-    if (isValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login successful!')),
+  void _login() {
+    if (_formKey.currentState!.validate()) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Login Successful'),
+          content: const Text('You have successfully login!'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          HomePage(name: _emailController.text.split('@')[0])),
+                );
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
       );
-
-      Future.delayed(const Duration(seconds: 1), () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => HomePage(name: email.split('@')[0])),
-        );
-      });
     }
   }
 
@@ -72,94 +54,113 @@ class _LoginState extends State<Login> {
       body: SafeArea(
         child: Form(
           key: _formKey,
-          child: Column(
-            children: [
-              Image.asset(
-                'assets/flag.png',
-                height: 180,
-                width: MediaQuery.of(context).size.width,
-                fit: BoxFit.cover,
-              ),
-              const SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: CustomTextField(
-                  controller: _emailController,
-                  labelText: 'Email',
-                  hintText: 'example@gmail.com',
-                  prefixIcon: Icons.email,
-                  errorText: _emailError,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Image.asset(
+                  'assets/flag.png',
+                  height: 180,
+                  width: MediaQuery.of(context).size.width,
+                  fit: BoxFit.cover,
                 ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: CustomTextField(
-                  labelText: 'Password',
-                  controller: _passwordController,
-                  prefixIcon: Icons.lock,
-                  obscureText: _obscurePassword,
-                  obscuringCharacter: '*',
-                  errorText: _passwordError,
-                  showVisibilityToggle: true,
-                  onVisibilityToggle: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.9,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.green,
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: ElevatedButton(
-                      onPressed: validateAndLogin,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        backgroundColor: Colors.green[600],
-                      ),
-                      child: const Text(
-                        "Login",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Don’t Have An Account?'),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const RegisterPage()),
-                      );
+                const SizedBox(height: 30),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: CustomTextField(
+                    controller: _emailController,
+                    labelText: 'Email',
+                    hintText: 'example@gmail.com',
+                    prefixIcon: Icons.email,
+                    errorText: _emailError,
+                    validator: (value) {
+                      final regex = RegExp(r"^[\w\.-]+@[\w\.-]+\.\w+$");
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter a username';
+                      } else if (!regex.hasMatch(value)) {
+                        return 'invalid email';
+                      }
+                      return null;
                     },
-                    child: const Text('Register'),
                   ),
-                ],
-              )
-            ],
+                ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: CustomTextField(
+                    labelText: 'Password',
+                    controller: _passwordController,
+                    prefixIcon: Icons.lock,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a password';
+                      } else if (value.length < 6) {
+                        return 'Password must be at least 6 characters';
+                      }
+                      return null;
+                    },
+                    obscureText: _obscurePassword,
+                    obscuringCharacter: '*',
+                    errorText: _passwordError,
+                    showVisibilityToggle: true,
+                    onVisibilityToggle: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(height: 30),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green,
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _login,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          backgroundColor: Colors.green[600],
+                        ),
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Don’t Have An Account?'),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const RegisterPage()),
+                        );
+                      },
+                      child: const Text('Register'),
+                    ),
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       ),

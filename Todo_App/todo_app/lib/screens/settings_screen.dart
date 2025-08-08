@@ -66,9 +66,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isSelected = currentLang == langCode;
     return GestureDetector(
       onTap: () {
-        setState(() {
-          currentLang = langCode;
-        });
+        setState(
+          () {
+            currentLang = langCode;
+          },
+        );
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
