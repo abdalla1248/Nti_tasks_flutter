@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:todapp/core/helpers/navigate.dart';
 import 'package:todapp/core/utils/app_colors.dart';
-import '../tasks/Addtask.dart';
+import '../../tasks/view/Addtask.dart';
 import 'widgets/header_section.dart';
 import 'widgets/progress_card.dart';
 import 'widgets/in_progress_section.dart';

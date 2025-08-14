@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:todapp/core/helpers/navigate.dart';
-import '../../tasks/ViewTasksPage.dart';
+import '../../../tasks/view/ViewTasksPage.dart';
 
 class ProgressCard extends StatelessWidget {
   final double progressPercentage;

@@ -3,12 +3,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:todapp/core/helpers/validator_helper.dart';
 
-import '../../core/utils/app_assets.dart';
-import '../../core/widgets/custom_text_field.dart';
-import '../home/HomePage.dart';
+import '../../../core/utils/app_assets.dart';
+import '../../../core/widgets/custom_text_field.dart';
+import '../../home/view/HomePage.dart';
 
 class Changepass extends StatefulWidget {
-  Changepass({super.key, required this.name, this.password});
+  const Changepass({super.key, required this.name, this.password});
   final String name;
   final String? password;
   @override

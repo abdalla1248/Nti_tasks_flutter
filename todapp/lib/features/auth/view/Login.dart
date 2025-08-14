@@ -4,8 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:todapp/core/helpers/validator_helper.dart';
 import 'package:todapp/core/utils/app_assets.dart';
 
-import '../../core/widgets/custom_text_field.dart';
-import '../home/HomePage.dart';
+import '../../../core/widgets/custom_text_field.dart';
+import '../../home/view/HomePage.dart';
 import 'register.dart';
 class Login extends StatefulWidget {
   const Login({super.key});

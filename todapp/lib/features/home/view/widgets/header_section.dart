@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:todapp/core/utils/app_assets.dart';
-import '../../profile/ProfilePage.dart';
+import '../../../profile/view/ProfilePage.dart';
 
 class HeaderSection extends StatelessWidget {
   final String name;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:todapp/core/utils/app_assets.dart';
 import 'package:todapp/core/utils/app_text_styles.dart';
 
-import '../auth/register.dart';
+import '../../auth/view/register.dart';
 
 class StartPage extends StatefulWidget {
   const StartPage({super.key});

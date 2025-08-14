@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/widgets/custom_text_field.dart';
+import '../../../../core/widgets/custom_text_field.dart';
 
 class SearchBarWidget extends StatelessWidget {
   final TextEditingController controller;

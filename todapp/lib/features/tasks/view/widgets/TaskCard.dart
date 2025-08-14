@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/utils/app_assets.dart';
+import '../../../../core/utils/app_assets.dart';
 
 class TaskCard extends StatelessWidget {
   final Map<String, dynamic> task;

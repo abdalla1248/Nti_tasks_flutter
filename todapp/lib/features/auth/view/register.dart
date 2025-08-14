@@ -3,9 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:todapp/core/utils/app_assets.dart';
 import 'package:todapp/core/widgets/app_button.dart';
-import '../../core/helpers/validator_helper.dart';
-import '../../core/widgets/custom_text_field.dart';
-import '../home/HomePage.dart';
+import '../../../core/helpers/validator_helper.dart';
+import '../../../core/widgets/custom_text_field.dart';
+import '../../home/view/HomePage.dart';
 import 'Login.dart';
 
 class RegisterPage extends StatefulWidget {

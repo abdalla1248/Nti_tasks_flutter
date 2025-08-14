@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:todapp/core/utils/app_assets.dart';
 
-import '../home/HomePage.dart';
+import '../../home/view/HomePage.dart';
 
 class Userupdate extends StatelessWidget {
   Userupdate({super.key});

@@ -4,7 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:todapp/core/helpers/navigate.dart';
 import 'package:todapp/core/utils/app_assets.dart';
 
-import '../../core/utils/app_colors.dart';
+import '../../../core/utils/app_colors.dart';
 import 'startpage.dart';
 
 class SplashCard extends StatefulWidget {
