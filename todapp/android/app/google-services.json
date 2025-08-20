@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "369858388663",
+    "project_id": "nti-pro",
+    "storage_bucket": "nti-pro.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:369858388663:android:e7d0a7fef73a9c5e8d6332",
+        "android_client_info": {
+          "package_name": "com.example.todapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCm9Zd-6XL6H0R4DZKhpBVXsgBpoyNj0Zk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -36,6 +36,11 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_screenutil: ^5.9.3
   flutter_svg: ^2.2.0
+  flutter_bloc: ^9.1.1
+  firebase_core: ^4.0.0
+  firebase_auth: ^6.0.1
+  cloud_firestore: ^6.0.0
+  image_picker: ^1.2.0
 
 dev_dependencies:
   flutter_test:
@@ -63,7 +68,6 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
-    - assets/fonts/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -71,7 +75,7 @@ flutter:
   fonts:
     - family: Lexend Deca
       fonts:
-        - asset: assets/fonts/lexend_deca/LexendDeca-Regular.ttf
+        - asset: assets/fonts/Lexend_Deca/static/LexendDeca-Regular.ttf
         # Add more weights/styles if available, e.g.:
         # - asset: assets/fonts/lexend_deca/LexendDeca-Bold.ttf
         #   weight: 700

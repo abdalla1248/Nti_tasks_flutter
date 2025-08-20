@@ -54,10 +54,13 @@ class CustomTextField extends StatelessWidget {
           ),
         ),
         prefixIcon: prefixIcon,
-        errorText: errorText, // keep this if you want to support manual errors too
+        errorText:
+            errorText, 
         suffixIcon: showVisibilityToggle
             ? IconButton(
-                icon: (obscureText ? SvgPicture.asset(AppAssets.lock) : SvgPicture.asset(AppAssets.unlock)),
+                icon: (obscureText
+                    ? SvgPicture.asset(AppAssets.unlock)
+                    : SvgPicture.asset(AppAssets.lock)),
                 onPressed: onVisibilityToggle,
               )
             : (suffixIcon),

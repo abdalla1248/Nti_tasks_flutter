@@ -5,16 +5,11 @@ import 'UserUpdate.dart';
 import 'settings_screen.dart';
 import 'widget/ProfileCard.dart';
 
-class Profilepage extends StatefulWidget {
+class Profilepage extends StatelessWidget {
   const Profilepage({super.key, required this.name, this.password});
   final String name;
   final String ? password;
 
-  @override
-  State<Profilepage> createState() => _ProfilepageState();
-}
-
-class _ProfilepageState extends State<Profilepage> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -37,7 +32,7 @@ class _ProfilepageState extends State<Profilepage> {
                   children: [
                     const Text("Hello!", style: TextStyle(fontSize: 16)),
                     Text(
-                      widget.name,
+                      name,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -68,7 +63,7 @@ class _ProfilepageState extends State<Profilepage> {
                  Navigator.push(
                    context,
                    MaterialPageRoute(
-                     builder: (context) => Changepass(name: widget.name,password:  widget.password),
+                     builder: (context) => Changepass(name: name,password:  password),
                    ),
                  );
               },
@@ -79,7 +74,7 @@ class _ProfilepageState extends State<Profilepage> {
               onTap: () {
                  Navigator.push(
                    context,
-                   MaterialPageRoute(builder: (context) => SettingsScreen(selectedLanguage: '',)),
+                   MaterialPageRoute(builder: (context) => SettingsScreen()),
                  );
               },
             ),

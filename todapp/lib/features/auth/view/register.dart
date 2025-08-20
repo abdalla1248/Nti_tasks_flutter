@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:todapp/core/helpers/navigate.dart';
+import 'package:todapp/core/helpers/validator_helper.dart';
 import 'package:todapp/core/utils/app_assets.dart';
 import 'package:todapp/core/widgets/app_button.dart';
-import '../../../core/helpers/validator_helper.dart';
-import '../../../core/widgets/custom_text_field.dart';
-import '../../home/view/HomePage.dart';
+import 'package:todapp/core/widgets/custom_text_field.dart';
+import 'package:todapp/features/auth/cubit/register_cubit/register_cubit.dart';
+import 'package:todapp/features/home/view/HomePage.dart';
+import '../cubit/register_cubit/register_state.dart';
 import 'Login.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -16,161 +22,184 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  bool _obscurePassword = true;
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
 
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
-
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  void _register() {
-    if (_formKey.currentState!.validate()) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: const Text('Registration Successful'),
-          content: const Text('You have successfully registered!'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HomePage(
-                        name: _usernameController.text,
-                        password: _passwordController.text),
-                  ),
-                );
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Image.asset(
-                AppAssets.flag,
-                height: 298.h,
-                width: MediaQuery.of(context).size.width,
-                fit: BoxFit.cover,
+    return BlocProvider(
+      create: (_) => RegisterCubit(),
+      child: BlocConsumer<RegisterCubit, RegisterState>(
+        listener: (context, state) {
+          if (state is RegisterSuccess) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => HomePage(
+                  name: RegisterCubit.get(context).nameController.text,
+                  password: RegisterCubit.get(context).passwordController.text,
+                ),
               ),
-              const SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            );
+          } else if (state is RegisterFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.error)),
+            );
+          }
+        },
+        builder: (context, state) {
+          final cubit = RegisterCubit.get(context);
+
+          return Scaffold(
+            body: Form(
+              key: cubit.formKey,
+              child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    TextSelectionTheme(
-                      data: TextSelectionThemeData(
-                          selectionColor:
-                              const Color.fromARGB(255, 140, 139, 139)
-                                  .withOpacity(.30)),
-                      child: CustomTextField(
-                        hintText: 'Username',
-                        prefixIcon: IconButton(
-                          onPressed: null,
-                          icon: SvgPicture.asset(AppAssets.profile),
-                        ),
-                        controller: _usernameController,
-                        errorText: null,
-                        obscureText: false,
-                        obscuringCharacter: '*',
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Please enter a username';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    CustomTextField(
-                      hintText: 'Password',
-                      prefixIcon: IconButton(
-                        onPressed: null,
-                        icon: SvgPicture.asset(AppAssets.password),
-                      ),
-                      controller: _passwordController,
-                      errorText: null,
-                      obscureText: _obscurePassword,
-                      obscuringCharacter: '*',
-                      showVisibilityToggle: true,
-                      onVisibilityToggle: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                      validator: (value) => ValidatorHelper.validatePassword(value),
-                    ),
-                    const SizedBox(height: 20),
-                    CustomTextField(
-                      hintText: 'Confirm Password',
-                      prefixIcon: IconButton(
-                        onPressed: null,
-                        icon: SvgPicture.asset(AppAssets.password),
-                      ),
-                      controller: _confirmPasswordController,
-                      errorText: null,
-                      obscureText: true,
-                      obscuringCharacter: '*',
-                      validator: (value) => ValidatorHelper.validateConfirmPassword(value, _passwordController.text),
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: _selectedImage != null
+                          ? Image.file(
+                              _selectedImage!,
+                              height: 298.h,
+                              width: MediaQuery.of(context).size.width,
+                              fit: BoxFit.cover,
+                            )
+                          : Image.asset(
+                              AppAssets.flag,
+                              height: 298.h,
+                              width: MediaQuery.of(context).size.width,
+                              fit: BoxFit.cover,
+                            ),
                     ),
                     const SizedBox(height: 30),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.green,
-                            blurRadius: 8,
-                            spreadRadius: 1,
-                            offset: Offset(0, 3),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Column(
+                        children: [
+                          // Username field
+                          CustomTextField(
+                            hintText: 'Email',
+                            prefixIcon: IconButton(
+                              onPressed: null,
+                              icon: SvgPicture.asset(AppAssets.profile),
+                            ),
+                            controller: cubit.emailController,
+                            obscureText: false,
+                            validator: ValidatorHelper.validateEmail,
+                          ),
+                          const SizedBox(height: 20),
+                          CustomTextField(
+                            hintText: 'Username',
+                            prefixIcon: IconButton(
+                              onPressed: null,
+                              icon: SvgPicture.asset(AppAssets.profile),
+                            ),
+                            controller: cubit.nameController,
+                            obscureText: false,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter a username';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Password field
+                          CustomTextField(
+                            hintText: 'Password',
+                            prefixIcon: IconButton(
+                              onPressed: null,
+                              icon: SvgPicture.asset(AppAssets.password),
+                            ),
+                            controller: cubit.passwordController,
+                            obscureText: cubit.obscurePassword,
+                            showVisibilityToggle: true,
+                            onVisibilityToggle: cubit.togglePasswordVisibility,
+                            validator: ValidatorHelper.validatePassword,
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Confirm password field
+                          CustomTextField(
+                            hintText: 'Confirm Password',
+                            prefixIcon: IconButton(
+                              onPressed: null,
+                              icon: SvgPicture.asset(AppAssets.password),
+                            ),
+                            controller: cubit.confirmPasswordController,
+                            obscureText: cubit.obscureConfirmPassword,
+                            showVisibilityToggle: true,
+                            onVisibilityToggle:
+                                cubit.toggleConfirmPasswordVisibility,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please confirm your password';
+                              }
+                              if (value != cubit.passwordController.text) {
+                                return 'Passwords do not match';
+                              }
+                              return null;
+                            },
                           ),
                         ],
                       ),
-                      child: AppButton(
-                        onPressed: _register,
-                        text: "Register",
+                    ),
+                    const SizedBox(height: 30),
+
+                    // Register button
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.9,
+                        child: AppButton(
+                          onPressed: () {
+                            cubit.register();
+                            AppNavigator.pushReplacement(
+                              context,
+                              const Login(),
+                              
+                            );
+                          },
+                          text: "Register",
+                        ),
                       ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Navigate to login
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Already have an account?'),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => const Login()),
+                            );
+                          },
+                          child: const Text('Login'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
-               Row(
-                 mainAxisAlignment: MainAxisAlignment.center,
-                 children: [
-                   const Text('Already have an account?'),
-                   TextButton(
-                     onPressed: () {
-                       Navigator.pushReplacement(
-                         context,
-                         MaterialPageRoute(
-                             builder: (context) => const Login()),
-                       );
-                     },
-                     child: const Text('Login'),
-                   ),
-                 ],
-               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
