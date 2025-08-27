@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../tasks/data/model/task_model.dart';
 import 'package:todapp/core/helpers/navigate.dart';
 import '../../../tasks/view/ViewTasksPage.dart';
 
 class ProgressCard extends StatelessWidget {
   final double progressPercentage;
-  final List<Map<String, dynamic>> tasks; // ✅ Store tasks
+  final List<TaskModel> tasks;
 
   const ProgressCard({
     super.key,
     required this.progressPercentage,
-    required this.tasks, // ✅ Include in constructor
+    required this.tasks,
   });
 
   @override
@@ -62,14 +63,14 @@ class ProgressCard extends StatelessWidget {
                         onTap: () {
                           AppNavigator.push(
                             context,
-                            ViewTasksPage(tasks: tasks), // ✅ Use tasks directly
+                            ViewTasksPage(
+                              tasks: tasks, // pass TaskModel list directly
+                            ),
                           );
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
+                              horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),

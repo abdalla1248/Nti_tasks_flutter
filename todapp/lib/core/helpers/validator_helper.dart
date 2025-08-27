@@ -29,7 +29,7 @@ class ValidatorHelper {
     return null;
   }
 
-  static String? validateNotEmpty(String? value, String fieldName) {
+  static String? validateNotEmpty(String? value) {
     if (value == null || value.isEmpty) {
       return 'UserName is required';
     }

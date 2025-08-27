@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:todapp/features/auth/data/repo/auth_repo.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'register_state.dart';
 
 class RegisterCubit extends Cubit<RegisterState> {
@@ -16,36 +17,50 @@ class RegisterCubit extends Cubit<RegisterState> {
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
 
-  static RegisterCubit get(BuildContext context) =>
-      BlocProvider.of<RegisterCubit>(context);
+  static RegisterCubit get(context) => BlocProvider.of<RegisterCubit>(context);
 
-  // Toggle main password visibility
   void togglePasswordVisibility() {
     obscurePassword = !obscurePassword;
     emit(ChangePasswordVisibility(obscurePassword));
   }
 
-  // Toggle confirm password visibility
   void toggleConfirmPasswordVisibility() {
     obscureConfirmPassword = !obscureConfirmPassword;
     emit(ChangeConfirmPasswordVisibility(obscureConfirmPassword));
   }
 
-  // Fake registration logic
-  void register() async {
-    AuthRepo authRepo = AuthRepo();
-    if (formKey.currentState!.validate()) {
-      emit(RegisterLoading());
-      try {
-        await authRepo.register(
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
-          name: nameController.text.trim(),
-        );
-        emit(RegisterSuccess());
-      } catch (error) {
-        emit(RegisterFailure(error.toString()));
+  Future<void> register() async {
+    if (!formKey.currentState!.validate()) return;
+
+    emit(RegisterLoading());
+
+    try {
+      // Firebase registration
+      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      // Save username in Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({
+        'username': nameController.text.trim(),
+        'email': emailController.text.trim(),
+      });
+
+      emit(RegisterSuccess());
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'Registration failed';
+      if (e.code == 'email-already-in-use') {
+        errorMessage = 'Email is already registered';
+      } else if (e.code == 'weak-password') {
+        errorMessage = 'Password is too weak';
       }
+      emit(RegisterFailure(errorMessage));
+    } catch (e) {
+      emit(RegisterFailure(e.toString()));
     }
   }
 }

@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:todapp/core/helpers/navigate.dart';
 import 'package:todapp/core/utils/app_assets.dart';
+import 'package:todapp/features/auth/view/Login.dart';
+import 'package:todapp/features/auth/view/register.dart';
 
 import '../../../core/utils/app_colors.dart';
 import 'startpage.dart';
@@ -19,7 +21,7 @@ class _SplashCardState extends State<SplashCard> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(seconds: 3), () {
-      AppNavigator.pushReplacement(context, const StartPage());
+      AppNavigator.pushReplacement(context,  Login());
     });
   }
   

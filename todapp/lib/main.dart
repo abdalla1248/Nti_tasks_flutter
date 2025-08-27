@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         home: SplashCard(),
         routes: {
-          '/home': (_) => const HomePage(name: '', password: ''),
+          '/home': (_) => const HomePage(username: ''),
         },
       ),
     );

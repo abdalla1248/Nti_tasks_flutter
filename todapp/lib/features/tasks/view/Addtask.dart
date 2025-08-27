@@ -5,12 +5,9 @@ import '../../../core/utils/app_assets.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../cubit/add_task._state.dart';
 import '../cubit/add_task_cubit.dart';
-
 class AddTaskScreen extends StatelessWidget {
   final List<Map<String, dynamic>> tasks;
-
   const AddTaskScreen({super.key, required this.tasks});
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -22,15 +19,14 @@ class AddTaskScreen extends StatelessWidget {
               SnackBar(content: Text(state.error)),
             );
           } else if (state is AddTaskSuccess) {
-            Navigator.of(context)
-                .pushNamedAndRemoveUntil('/home', (route) => false);
+            // Pop the new task back to Home so it can be added immediately
+            Navigator.pop(context, state.task);
             SnackbarHelper.show(context, 'Task added successfully!',
                 backgroundColor: Colors.green);
           }
         },
         builder: (context, state) {
           final cubit = AddTaskCubit.get(context);
-
           return Scaffold(
             backgroundColor: const Color(0xFFF5F7F6),
             appBar: AppBar(
@@ -58,21 +54,17 @@ class AddTaskScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-
                   CustomTextField(
                     hintText: "Task Title",
                     controller: cubit.titleController,
                   ),
                   const SizedBox(height: 16),
-
                   CustomTextField(
                     hintText: "Description",
                     controller: cubit.descController,
                     maxLines: 4,
                   ),
                   const SizedBox(height: 16),
-
-                  // Dropdown
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 10),
@@ -98,8 +90,6 @@ class AddTaskScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Date + Time Picker
                   GestureDetector(
                     onTap: () async {
                       final date = await showDatePicker(
@@ -139,7 +129,6 @@ class AddTaskScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 30),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -166,7 +155,7 @@ class AddTaskScreen extends StatelessWidget {
                               'Add Task',
                               style:
                                   TextStyle(fontSize: 16, color: Colors.white),
-                            ),
+                          ),
                     ),
                   ),
                 ],

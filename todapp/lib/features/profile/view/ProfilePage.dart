@@ -52,7 +52,7 @@ class Profilepage extends StatelessWidget {
               onTap: () {
                Navigator.push(
                  context,
-                 MaterialPageRoute(builder: (context) => Userupdate()),
+                 MaterialPageRoute(builder: (context) => UserUpdatePage(initialName: name)),
                );
               },
             ),

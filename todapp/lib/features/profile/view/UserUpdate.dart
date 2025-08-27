@@ -1,85 +1,54 @@
+// user_update.dart
 import 'package:flutter/material.dart';
 import 'package:todapp/core/utils/app_assets.dart';
 
-import '../../home/view/HomePage.dart';
-
-class Userupdate extends StatelessWidget {
-  Userupdate({super.key});
-
-  final TextEditingController _usernameController = TextEditingController();
+class UserUpdatePage extends StatelessWidget {
+  final String initialName;
+  const UserUpdatePage({super.key, required this.initialName});
 
   @override
   Widget build(BuildContext context) {
+    final TextEditingController _controller =
+        TextEditingController(text: initialName);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Image.asset(
-            AppAssets.flag,// take full width
-            fit: BoxFit.cover // crop to fill width
-          ),
+          Image.asset(AppAssets.flag, fit: BoxFit.cover),
           const SizedBox(height: 30),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
-              controller: _usernameController,
+              controller: _controller,
               decoration: const InputDecoration(
                 labelText: 'User Name',
                 border: OutlineInputBorder(),
               ),
-              
             ),
           ),
-          Spacer(),
-          const SizedBox(height: 20),
+          const Spacer(),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green,
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                    offset: Offset(0, 3),
-                  ),
-                ],
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[600],
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
               ),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green[600],
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 12, horizontal: 24),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-                onPressed: () {
-                  String name = _usernameController.text.trim();
-                  if (name.isNotEmpty) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HomePage(name: name),
-                      ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please enter your name')),
-                    );
-                  }
-                },
-                child: const Text(
-                  "Save",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+              onPressed: () {
+                final newName = _controller.text.trim();
+                if (newName.isNotEmpty) {
+                  Navigator.pop(context, newName); // send name back
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter a name')),
+                  );
+                }
+              },
+              child: const Text("Save", style: TextStyle(color: Colors.white)),
             ),
           ),
         ],

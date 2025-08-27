@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../tasks/data/model/task_model.dart';
 
 class InProgressSection extends StatelessWidget {
-  final List<Map<String, dynamic>> inProgressTasks;
-  final VoidCallback updateTaskCounts;
+  final List<TaskModel> inProgressTasks;
+  final void Function(TaskModel task) markCompleted;
 
   const InProgressSection({
     super.key,
     required this.inProgressTasks,
-    required this.updateTaskCounts,
+    required this.markCompleted,
   });
 
   @override
@@ -53,66 +54,57 @@ class InProgressSection extends StatelessWidget {
             itemCount: inProgressTasks.length,
             itemBuilder: (context, index) {
               final task = inProgressTasks[index];
-              bool isWorkTask = task["type"] == "Work";
+              final cardColor = _getCardColor(task.type);
+              final iconBgColor = _getIconBgColor(task.type);
 
-              return GestureDetector(
-                onTap: () {
-                  
-                  task["isCompleted"] = true;
-                  updateTaskCounts();
-                },
-                child: Container(
-                  width: 250,
-                  margin: const EdgeInsets.only(right: 12),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isWorkTask
-                        ? task["color"]
-                        : task["color"].withOpacity(.3),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            "${task["type"]} Task",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: isWorkTask ? Colors.white : Colors.grey,
-                            ),
+              return Container(
+                width: 250,
+                margin: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          "${task.type} Task",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: task.type == "Work" ? Colors.white : Colors.black87,
                           ),
-                          const Spacer(),
-                          Container(
-                            width: 30,
-                            decoration: BoxDecoration(
-                              color: isWorkTask ? Colors.green : task["color"],
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Icon(
-                              task["icon"],
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        task["title"],
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: isWorkTask ? Colors.white : Colors.black87,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        const Spacer(),
+                        Container(
+                          width: 30,
+                          decoration: BoxDecoration(
+                            color: iconBgColor,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Icon(
+                            _getIconForType(task.type),
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      task.title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: task.type == "Work" ? Colors.white : Colors.black87,
                       ),
-                     
-                    ],
-                  ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               );
             },
@@ -120,5 +112,44 @@ class InProgressSection extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  IconData _getIconForType(String? type) {
+    switch (type) {
+      case "Home":
+        return Icons.home;
+      case "Personal":
+        return Icons.person;
+      case "Work":
+        return Icons.work;
+      default:
+        return Icons.task;
+    }
+  }
+
+  Color _getCardColor(String? type) {
+    switch (type) {
+      case "Home":
+        return Colors.pinkAccent.shade100;
+      case "Personal":
+        return Colors.green.shade100;
+      case "Work":
+        return Colors.black;
+      default:
+        return Colors.grey.shade200;
+    }
+  }
+
+  Color _getIconBgColor(String? type) {
+    switch (type) {
+      case "Home":
+        return Colors.pinkAccent;
+      case "Personal":
+        return Colors.green;
+      case "Work":
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
   }
 }

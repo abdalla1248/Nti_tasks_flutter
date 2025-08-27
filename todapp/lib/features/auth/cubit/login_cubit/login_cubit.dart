@@ -1,35 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login_state.dart';
-import 'package:todapp/features/auth/data/repo/auth_repo.dart';
 
 class LoginCubit extends Cubit<LoginState> {
   LoginCubit() : super(LoginInitial());
 
-  bool obscurePassword = true;
   final formKey = GlobalKey<FormState>();
-
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  static LoginCubit get(BuildContext context) => BlocProvider.of<LoginCubit>(context);
+  bool obscurePassword = true;
+
+  static LoginCubit get(context) => BlocProvider.of(context);
 
   void togglePasswordVisibility() {
     obscurePassword = !obscurePassword;
     emit(ChangePasswordVisibility(obscurePassword));
   }
 
-  void login() async {
+  Future<void> login() async {
+    if (!formKey.currentState!.validate()) return;
+
     emit(LoginLoading());
+
     try {
-      final authRepo = AuthRepo();
-      await authRepo.login(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-      emit(LoginSuccess());
+      // Login with Firebase Auth
+      UserCredential credential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
+
+      // Fetch username from Firestore
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(credential.user!.uid)
+          .get();
+
+      final username = doc['username'] ?? '';
+
+      emit(LoginSuccess(username: username));
     } catch (e) {
-      emit(LoginFailure(e.toString()));
+      emit(LoginFailure(error: e.toString()));
     }
   }
 }

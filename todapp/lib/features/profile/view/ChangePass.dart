@@ -138,7 +138,7 @@ class Changepass extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const HomePage(name: 'User'),
+                                        HomePage(username: name),
                                   ),
                                 );
                               });

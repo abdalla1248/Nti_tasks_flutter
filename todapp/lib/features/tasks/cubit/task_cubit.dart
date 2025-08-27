@@ -4,38 +4,63 @@ import '../data/repo/task_repo.dart';
 import 'task_state.dart';
 
 class TaskCubit extends Cubit<TaskState> {
-  final TaskRepo taskRepo;
-  TaskCubit(this.taskRepo) : super(TaskLoading());
+  final TaskRepo _taskRepo = TaskRepo(); // Singleton instance
 
-  void loadTasks(String userId) {
+  TaskCubit() : super(TaskLoading());
+
+  Future<void> loadTasks(String userId) async {
     emit(TaskLoading());
-    taskRepo.getTasks(userId).listen(
+    final result = await _taskRepo.getTasks(userId);
+    result.fold(
+      (error) => emit(TaskError(error)),
       (tasks) => emit(TaskLoaded(tasks)),
-      onError: (e) => emit(TaskError(e.toString())),
     );
   }
 
   Future<void> addTask(TaskModel task) async {
-    try {
-      await taskRepo.addTask(task);
-    } catch (e) {
-      emit(TaskError(e.toString()));
-    }
+    final result = await _taskRepo.addTask(task);
+    result.fold(
+      (error) => emit(TaskError(error)),
+      (newTask) {
+        if (state is TaskLoaded) {
+          final updatedTasks = List<TaskModel>.from((state as TaskLoaded).tasks)
+            ..add(newTask);
+          emit(TaskLoaded(updatedTasks));
+        }
+      },
+    );
   }
 
   Future<void> updateTask(TaskModel task) async {
-    try {
-      await taskRepo.updateTask(task);
-    } catch (e) {
-      emit(TaskError(e.toString()));
-    }
+    final result = await _taskRepo.updateTask(task);
+    result.fold(
+      (error) => emit(TaskError(error)),
+      (_) {
+        if (state is TaskLoaded) {
+          final tasks = (state as TaskLoaded).tasks;
+          final index = tasks.indexWhere((t) => t.id == task.id);
+          if (index != -1) {
+            final updatedTasks = List<TaskModel>.from(tasks);
+            updatedTasks[index] = task;
+            emit(TaskLoaded(updatedTasks));
+          }
+        }
+      },
+    );
   }
 
-  Future<void> deleteTask(String id) async {
-    try {
-      await taskRepo.deleteTask(id);
-    } catch (e) {
-      emit(TaskError(e.toString()));
-    }
+  Future<void> deleteTask(String taskId) async {
+    final result = await _taskRepo.deleteTask(taskId);
+    result.fold(
+      (error) => emit(TaskError(error)),
+      (_) {
+        if (state is TaskLoaded) {
+          final tasks = (state as TaskLoaded).tasks;
+          final updatedTasks =
+              tasks.where((task) => task.id != taskId).toList();
+          emit(TaskLoaded(updatedTasks));
+        }
+      },
+    );
   }
 }

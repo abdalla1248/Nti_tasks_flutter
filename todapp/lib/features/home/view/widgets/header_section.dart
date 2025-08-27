@@ -5,8 +5,14 @@ import '../../../profile/view/ProfilePage.dart';
 class HeaderSection extends StatelessWidget {
   final String name;
   final String? password;
+  final VoidCallback? onEdit; // optional callback for editing name
 
-  const HeaderSection({super.key, required this.name, this.password});
+  const HeaderSection({
+    super.key,
+    required this.name,
+    this.password,
+    this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,13 +42,23 @@ class HeaderSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text("Hello!", style: TextStyle(fontSize: 16)),
-              Text(
-                name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: Colors.black,
-                ),
+              Row(
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Colors.black,
+                    ),
+                  ),
+                  if (onEdit != null)
+                    IconButton(
+                      icon: const Icon(Icons.edit, size: 20),
+                      onPressed: onEdit,
+                      tooltip: 'Edit Name',
+                    ),
+                ],
               ),
             ],
           ),

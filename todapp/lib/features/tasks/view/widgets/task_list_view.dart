@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:todapp/features/tasks/data/model/task_model.dart';
 import 'TaskCard.dart';
 
 class TaskListView extends StatelessWidget {
-  final List<Map<String, dynamic>> tasks;
-  final Color Function(String) getStatusColor;
-  final Function(Map<String, dynamic>) onTapTask;
+  final List<TaskModel> tasks;
+  final Color Function(TaskModel) getStatusColor;
+  final Function(TaskModel) onTapTask;
 
   const TaskListView({
     super.key,
@@ -16,13 +17,14 @@ class TaskListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       itemCount: tasks.length,
-      itemBuilder: (context, index) {
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemBuilder: (_, index) {
+        final task = tasks[index];
         return TaskCard(
-          task: tasks[index],
+          task: task,
           getStatusColor: getStatusColor,
-          onTap: () => onTapTask(tasks[index]),
+          onTap: () => onTapTask(task),
         );
       },
     );

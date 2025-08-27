@@ -1,14 +1,16 @@
-// ignore_for_file: file_names
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:todapp/features/tasks/view/widgets/task_list_view.dart';
+import '../../tasks/data/model/task_model.dart';
+import '../cubit/view_tasks_cubit.dart';
 import 'EditTaskPage.dart';
-import 'widgets/FilterButton.dart';
-import 'widgets/ResultsHeader.dart';
 import 'widgets/SearchBar.dart';
-import 'widgets/task_list_view.dart';
+import 'widgets/ResultsHeader.dart';
+import 'widgets/FilterButton.dart';
+import 'widgets/filter_dialog.dart';
 
 class ViewTasksPage extends StatefulWidget {
-  final List<Map<String, dynamic>> tasks;
+  final List<TaskModel> tasks;
 
   const ViewTasksPage({super.key, required this.tasks});
 
@@ -17,110 +19,99 @@ class ViewTasksPage extends StatefulWidget {
 }
 
 class _ViewTasksPageState extends State<ViewTasksPage> {
-  List<Map<String, dynamic>> filteredTasks = [];
-  final TextEditingController _searchController = TextEditingController();
+  late final TextEditingController _searchController;
 
   @override
   void initState() {
     super.initState();
-    filteredTasks = List.from(widget.tasks);
+    _searchController = TextEditingController();
   }
 
-  void _searchTasks(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        filteredTasks = List.from(widget.tasks);
-      } else {
-        filteredTasks = widget.tasks.where((task) {
-          return task["title"].toLowerCase().contains(query.toLowerCase()) ||
-              task["description"].toLowerCase().contains(query.toLowerCase()) ||
-              task["type"].toLowerCase().contains(query.toLowerCase());
-        }).toList();
-      }
-    });
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case "In Progress":
-        return Colors.green.withAlpha(100);
-      case "Done":
-        return Colors.green;
-      case "Missed":
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  void _updateTask(Map<String, dynamic> updatedTask, int index) {
-    setState(() {
-      widget.tasks[index] = updatedTask;
-      filteredTasks = List.from(widget.tasks);
-    });
-  }
-
-  void _deleteTask(int index) {
-    setState(() {
-      widget.tasks.removeAt(index);
-      filteredTasks = List.from(widget.tasks);
-    });
-  }
-
-  void _showFilterDialog() {
-    // You can keep your existing dialog implementation here
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F6),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "Tasks",
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          SearchBarWidget(
-            controller: _searchController,
-            onChanged: _searchTasks,
-          ),
-          ResultsHeader(count: filteredTasks.length),
-          const SizedBox(height: 16),
-          Expanded(
-            child: TaskListView(
-              tasks: filteredTasks,
-              getStatusColor: _getStatusColor,
-              onTapTask: (task) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditTaskPage(
-                      task: task,
-                      taskIndex: widget.tasks.indexOf(task),
-                      onUpdate: _updateTask,
-                      onDelete: _deleteTask,
-                    ),
+    return BlocProvider(
+      create: (_) => ViewTasksCubit(initialTasks: widget.tasks),
+      child: BlocBuilder<ViewTasksCubit, ViewTasksState>(
+        builder: (context, state) {
+          final cubit = context.read<ViewTasksCubit>();
+
+          Color getStatusColor(TaskModel task) {
+            final now = DateTime.now();
+            final taskDate = task.taskDateTime;
+
+            if (!task.isDone && taskDate.isBefore(now)) {
+              return Colors.red;
+            } else {
+              return Colors.green.withAlpha(100);
+            }
+          }
+
+          return Scaffold(
+            backgroundColor: const Color(0xFFF5F7F6),
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: const Text(
+                "Tasks",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+              centerTitle: true,
+            ),
+            body: Column(
+              children: [
+                SearchBarWidget(
+                  controller: _searchController,
+                  onChanged: cubit.searchTasks,
+                ),
+                ResultsHeader(count: state.filteredTasks.length),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: TaskListView(
+                    tasks: state.filteredTasks,
+                    getStatusColor: getStatusColor,
+                    onTapTask: (task) async {
+                      final updatedTask = await Navigator.push<TaskModel?>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => EditTaskPage(task: task),
+                        ),
+                      );
+                      if (updatedTask != null) {
+                        cubit.updateTask(updatedTask);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            floatingActionButton: FilterButton(
+              onPressed: () async {
+                await showDialog(
+                  context: context,
+                  builder: (_) => BlocProvider.value(
+                    value:
+                        context.read<ViewTasksCubit>(), // reuse existing cubit
+                    child: const FilterDialog(),
                   ),
                 );
               },
             ),
-          ),
-        ],
+          );
+        },
       ),
-      floatingActionButton: FilterButton(onPressed: _showFilterDialog),
     );
   }
 }

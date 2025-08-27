@@ -1,9 +1,16 @@
+// task_groups_section.dart
 import 'package:flutter/material.dart';
+import '../../../tasks/data/model/task_model.dart';
 
 class TaskGroupsSection extends StatelessWidget {
+  final List<TaskModel> tasks;
   final List<Map<String, dynamic>> taskTypes;
 
-  const TaskGroupsSection({super.key, required this.taskTypes});
+  const TaskGroupsSection({
+    super.key,
+    required this.tasks,
+    required this.taskTypes,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +26,13 @@ class TaskGroupsSection extends StatelessWidget {
           const SizedBox(height: 12),
           Column(
             children: taskTypes.map((type) {
+              // Safe access with fallback
+              final title = type["title"] as String? ?? "Unknown";
+              final icon = type["icon"] as IconData? ?? Icons.help;
+              final color = type["color"] as Color? ?? Colors.grey;
+
+              int count = tasks.where((task) => task.type == title).length;
+
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(16),
@@ -38,14 +52,14 @@ class TaskGroupsSection extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: type["color"].withOpacity(0.1),
+                        color: color.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(type["icon"], color: type["color"], size: 20),
+                      child: Icon(icon, color: color, size: 20),
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      "${type["title"]} Task",
+                      "$title Task",
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -56,11 +70,11 @@ class TaskGroupsSection extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: type["color"],
+                        color: color,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        "${type["count"]}",
+                        "$count",
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,

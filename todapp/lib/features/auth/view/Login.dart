@@ -6,7 +6,6 @@ import 'package:todapp/core/helpers/navigate.dart';
 import 'package:todapp/core/helpers/validator_helper.dart';
 import 'package:todapp/core/utils/app_assets.dart';
 import 'package:todapp/core/widgets/app_button.dart';
-import 'package:todapp/features/auth/view/widget/dialog.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../home/view/HomePage.dart';
 import '../cubit/login_cubit/login_cubit.dart';
@@ -16,41 +15,28 @@ import 'register.dart';
 class Login extends StatelessWidget {
   const Login({super.key});
 
-  void _login(BuildContext context) {
-    final cubit = LoginCubit.get(context);
-    if (cubit.formKey.currentState!.validate()) {
-      cubit.login();
-      AppNavigator.pushReplacement(
-        context,
-        HomePage(
-          name: cubit.emailController.text.split('@')[0],
-          password: cubit.passwordController.text,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => LoginCubit(),
+      create: (_) => LoginCubit(),
       child: Scaffold(
         body: SingleChildScrollView(
           child: BlocConsumer<LoginCubit, LoginState>(
             listener: (context, state) {
               if (state is LoginSuccess) {
-                SuccessDialog(
-                  title: 'Login Successful',
-                  message: 'You have successfully logged in!',
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => HomePage(username: state.username),
+                  ),
                 );
               } else if (state is LoginFailure) {
-                SuccessDialog(
-                  title: 'Login Failed',
-                  message: state.error,
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.error)),
                 );
               }
             },
-            builder: (context, loginState) {
+            builder: (context, state) {
               final cubit = LoginCubit.get(context);
               return Form(
                 key: cubit.formKey,
@@ -111,10 +97,22 @@ class Login extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: AppButton(
-                            onPressed: () => _login(context),
-                            text: "Login",
-                          ),
+                          child: state is LoginLoading
+                              ? const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(12.0),
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                )
+                              : AppButton(
+                                  onPressed: () {
+                                    if (cubit.formKey.currentState!
+                                        .validate()) {
+                                      cubit.login();
+                                    }
+                                  },
+                                  text: "Login",
+                                ),
                         ),
                       ),
                     ),
@@ -127,7 +125,7 @@ class Login extends StatelessWidget {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const RegisterPage()),
+                                  builder: (context) => RegisterPage()),
                             );
                           },
                           child: const Text('Register'),

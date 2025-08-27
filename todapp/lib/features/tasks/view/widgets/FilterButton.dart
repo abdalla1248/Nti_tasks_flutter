@@ -12,7 +12,7 @@ class FilterButton extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.green,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(30),
         ),
         child: IconButton(
           onPressed: onPressed,

@@ -1,8 +1,18 @@
-// home_state.dart
-part of 'home_cubit.dart';
+import '../../tasks/data/model/task_model.dart';
 
-abstract class HomeState {}
+class HomeState {
+  final List<TaskModel> tasks;
+  final String username;
 
-class HomeInitial extends HomeState {}
+  HomeState({this.tasks = const [], this.username = ""});
 
-class HomeUpdated extends HomeState {}
+  HomeState copyWith({
+    List<TaskModel>? tasks,
+    String? username,
+  }) {
+    return HomeState(
+      tasks: tasks ?? this.tasks,
+      username: username ?? this.username,
+    );
+  }
+}

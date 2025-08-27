@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-
+import 'package:todapp/features/tasks/data/model/task_model.dart';
 import '../../../../core/utils/app_assets.dart';
 
 class TaskCard extends StatelessWidget {
-  final Map<String, dynamic> task;
+  final TaskModel task;
   final VoidCallback onTap;
-  final Color Function(String) getStatusColor;
+  final Color Function(TaskModel) getStatusColor;
 
   const TaskCard({
     super.key,
@@ -16,46 +16,35 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final today =
-        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    final rawDate = task['date'];
-
-    DateTime taskDate;
-    if (rawDate is DateTime) {
-      taskDate = rawDate;
-    } else if (rawDate is String) {
-      try {
-        if (rawDate.contains('/')) {
-          final p = rawDate.split('/');
-          taskDate = DateTime(
-            int.tryParse(p[2]) ?? DateTime.now().year,
-            int.tryParse(p[1]) ?? DateTime.now().month,
-            int.tryParse(p[0]) ?? DateTime.now().day,
-          );
-        } else {
-          taskDate = DateTime.parse(rawDate);
-        }
-      } catch (_) {
-        taskDate = DateTime.now();
-      }
-    } else {
-      taskDate = DateTime.now();
-    }
-
-    final bool isCompleted = task['isCompleted'] == true;
-    final bool isMissed = !isCompleted && taskDate.isBefore(today);
-
+    final today = DateTime.now();
+    final isCompleted = task.isDone;
+    final isMissed = !isCompleted && task.createdAt.toDate().isBefore(today);
     final status = isMissed ? 'Missed' : (isCompleted ? 'Done' : 'In Progress');
-    final bool isProgress = !isCompleted;
+    final statusColor = isMissed
+        ? Colors.red
+        : (isCompleted ? Colors.green : Colors.green.withOpacity(0.7));
+    final statusIcon = isMissed
+        ? Icons.error_outline
+        : (isCompleted ? Icons.check_circle : Icons.timelapse);
+    final typeIcon = task.type == 'Home'
+        ? Icons.home
+        : task.type == 'Personal'
+            ? Icons.person
+            : Icons.work_outline_outlined;
+    final typeColor = task.type == 'Home'
+        ? Colors.pink
+        : task.type == 'Personal'
+            ? Colors.green
+            : Colors.black;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.09),
@@ -65,23 +54,15 @@ class TaskCard extends StatelessWidget {
           ],
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(100),
-                    blurRadius: 5,
-                    offset: const Offset(0, 4),
-                  )
-                ],
-                borderRadius: BorderRadius.circular(8),
-                image: const DecorationImage(
-                  image: AssetImage(AppAssets.flag),
-                  fit: BoxFit.cover,
-                ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                AppAssets.flag,
+                width: 48,
+                height: 48,
+                fit: BoxFit.cover,
               ),
             ),
             const SizedBox(width: 12),
@@ -90,23 +71,23 @@ class TaskCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    task["title"],
+                    task.title,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                       color: Colors.black87,
                     ),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    task["description"],
+                    task.description,
                     style: const TextStyle(
-                      color: Colors.black54,
+                      color: Colors.black45,
                       fontSize: 12,
                     ),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -114,25 +95,40 @@ class TaskCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: getStatusColor(status),
+                    color: statusColor,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
-                    status,
-                    style: TextStyle(
-                      color: isProgress ? Colors.black : Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(statusIcon, size: 14, color: Colors.white),
+                      const SizedBox(width: 4),
+                      Text(
+                        status,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                Icon(task["icon"], color: task["color"], size: 20),
+                const SizedBox(height: 10),
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: typeColor.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(typeIcon, color: typeColor, size: 16),
+                ),
               ],
             ),
           ],
