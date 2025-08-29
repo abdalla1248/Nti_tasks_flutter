@@ -14,23 +14,47 @@ class TaskCard extends StatelessWidget {
     required this.getStatusColor,
   });
 
+  bool isSameDay(DateTime d1, DateTime d2) {
+    return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final today = DateTime.now();
+    final now = DateTime.now();
+    final taskDate = task.taskDateTime;
+
     final isCompleted = task.isDone;
-    final isMissed = !isCompleted && task.createdAt.toDate().isBefore(today);
-    final status = isMissed ? 'Missed' : (isCompleted ? 'Done' : 'In Progress');
+    final isMissed = !isCompleted &&
+        taskDate.isBefore(now) &&
+        !isSameDay(taskDate, now);
+    final isUpcoming = !isCompleted && taskDate.isAfter(now);
+
+    final status = isCompleted
+        ? 'Done'
+        : (isMissed ? 'Missed' : (isUpcoming ? 'Upcoming' : 'In Progress'));
+
     final statusColor = isMissed
         ? Colors.red
-        : (isCompleted ? Colors.green : Colors.green.withOpacity(0.7));
+        : isCompleted
+            ? Colors.green
+            : isUpcoming
+                ? Colors.blue
+                : Colors.orange;
+
     final statusIcon = isMissed
         ? Icons.error_outline
-        : (isCompleted ? Icons.check_circle : Icons.timelapse);
+        : isCompleted
+            ? Icons.check_circle
+            : isUpcoming
+                ? Icons.schedule
+                : Icons.timelapse;
+
     final typeIcon = task.type == 'Home'
         ? Icons.home
         : task.type == 'Personal'
             ? Icons.person
             : Icons.work_outline_outlined;
+
     final typeColor = task.type == 'Home'
         ? Colors.pink
         : task.type == 'Personal'
@@ -98,7 +122,8 @@ class TaskCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: statusColor,
                     borderRadius: BorderRadius.circular(12),
@@ -112,7 +137,7 @@ class TaskCard extends StatelessWidget {
                         status,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.bold,
                           fontSize: 11,
                         ),
                       ),

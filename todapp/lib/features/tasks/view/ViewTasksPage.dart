@@ -99,14 +99,21 @@ class _ViewTasksPageState extends State<ViewTasksPage> {
             ),
             floatingActionButton: FilterButton(
               onPressed: () async {
-                await showDialog(
+                final filterState = await showDialog(
                   context: context,
                   builder: (_) => BlocProvider.value(
-                    value:
-                        context.read<ViewTasksCubit>(), // reuse existing cubit
+                    value: context.read<ViewTasksCubit>(),
                     child: const FilterDialog(),
                   ),
                 );
+                if (filterState != null) {
+                  context.read<ViewTasksCubit>().filterTasks(
+                    category: filterState.selectedCategory,
+                    status: filterState.selectedStatus,
+                    date: filterState.pickedDate,
+                    time: filterState.pickedTime,
+                  );
+                }
               },
             ),
           );

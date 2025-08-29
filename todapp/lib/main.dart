@@ -4,7 +4,10 @@ import 'features/home/view/splashpage.dart';
 import 'features/home/view/HomePage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-void main() async{
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'features/profile/cubit/settings_cubit.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -17,14 +20,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: const Size(375, 812),
-      builder: (context, widget) => MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: SplashCard(),
-        routes: {
-          '/home': (_) => const HomePage(username: ''),
-        },
+    return BlocProvider(
+      create: (_) => SettingsCubit(),
+      child: ScreenUtilInit(
+        designSize: const Size(375, 812),
+        builder: (context, widget) => MaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: SplashCard(),
+          routes: {
+            '/home': (_) => const HomePage(username: ''),
+          },
+        ),
       ),
     );
   }

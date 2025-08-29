@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../cubit/settings_cubit.dart';
-import '../cubit/settings_state.dart';
+import 'package:todapp/features/profile/cubit/settings_cubit.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key, });
@@ -11,7 +10,16 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => SettingsCubit(),
-      child: BlocBuilder<SettingsCubit, SettingsState>(
+      child: BlocConsumer<SettingsCubit, SettingsState>(
+        listener: (context, state) {
+          if (state is LogoutSuccess) {
+            Navigator.pushReplacementNamed(context, '/login');
+          } else if (state is LogoutFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Logout failed: ${state.error}')),
+            );
+          }
+        },
         builder: (context, state) {
           final cubit = SettingsCubit.get(context);
 
@@ -28,29 +36,57 @@ class SettingsScreen extends StatelessWidget {
               ),
               foregroundColor: Colors.black,
             ),
-            body: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Language",
-                    style: TextStyle(fontSize: 18, color: Colors.black87),
+            body: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Language",
+                        style: TextStyle(fontSize: 18, color: Colors.black87),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: const Color(0xFFE0E0E0),
+                        ),
+                        child: Row(
+                          children: [
+                            _buildLangButton("AR", cubit.currentLang, cubit, context),
+                            _buildLangButton("EN", cubit.currentLang, cubit, context),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: const Color(0xFFE0E0E0),
-                    ),
-                    child: Row(
-                      children: [
-                        _buildLangButton("AR", cubit.currentLang, cubit, context),
-                        _buildLangButton("EN", cubit.currentLang, cubit, context),
-                      ],
+                ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.logout, color: Colors.white),
+                      label: const Text(
+                        "Logout",
+                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                      ),
+                      onPressed: () async {
+                        await cubit.logout();
+                      },
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },
