@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:todapp/core/helpers/navigate.dart';
+import 'package:todapp/features/home/view/splashpage.dart';
 import 'package:todapp/features/profile/cubit/settings_cubit.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -82,6 +84,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       onPressed: () async {
                         await cubit.logout();
+                        AppNavigator.pushReplacement(context, Splashview());
                       },
                     ),
                   ),

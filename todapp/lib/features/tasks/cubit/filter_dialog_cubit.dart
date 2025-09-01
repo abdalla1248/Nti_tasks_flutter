@@ -1,32 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/material.dart';
 
-class FilterDialogState {
-  final String selectedCategory;
-  final String selectedStatus;
-  final DateTime? pickedDate;
-  final TimeOfDay? pickedTime;
-  FilterDialogState({
-    required this.selectedCategory,
-    required this.selectedStatus,
-    this.pickedDate,
-    this.pickedTime,
-  });
+import 'filter_dialog_state.dart';
 
-  FilterDialogState copyWith({
-    String? selectedCategory,
-    String? selectedStatus,
-    DateTime? pickedDate,
-    TimeOfDay? pickedTime,
-  }) {
-    return FilterDialogState(
-      selectedCategory: selectedCategory ?? this.selectedCategory,
-      selectedStatus: selectedStatus ?? this.selectedStatus,
-      pickedDate: pickedDate ?? this.pickedDate,
-      pickedTime: pickedTime ?? this.pickedTime,
-    );
-  }
-}
 
 class FilterDialogCubit extends Cubit<FilterDialogState> {
   FilterDialogCubit()
@@ -43,8 +18,8 @@ class FilterDialogCubit extends Cubit<FilterDialogState> {
     emit(state.copyWith(selectedStatus: status));
   }
 
-  void setDateTime(DateTime? date, TimeOfDay? time) {
-    emit(state.copyWith(pickedDate: date, pickedTime: time));
+  void setDateTime(DateTime? date, ) {
+    emit(state.copyWith(pickedDate: date));
   }
 
   void clearDateTime() {

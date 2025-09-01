@@ -19,6 +19,7 @@ class Login extends StatelessWidget {
     return BlocProvider(
       create: (_) => LoginCubit(),
       child: Scaffold(
+        backgroundColor: Colors.white,
         body: SingleChildScrollView(
           child: BlocConsumer<LoginCubit, LoginState>(
             listener: (context, state) {

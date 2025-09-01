@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../tasks/data/model/task_model.dart';
@@ -18,8 +17,10 @@ class EditTaskPage extends StatelessWidget {
           if (state is EditTaskError) {
             ScaffoldMessenger.of(context)
                 .showSnackBar(SnackBar(content: Text(state.message)));
-          } else if (state is EditTaskSuccess || state is EditTaskDeleted) {
-            Navigator.pop(context, state is EditTaskSuccess ? state.task : null);
+          } else if (state is EditTaskSuccess) {
+            Navigator.pop(context, {'action': 'update', 'task': state.task});
+          } else if (state is EditTaskDeleted) {
+            Navigator.pop(context, {'action': 'delete'});
           }
         },
         builder: (context, state) {
@@ -27,12 +28,30 @@ class EditTaskPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final taskState = state is EditTaskLoaded ? state.task : (state as EditTaskSuccess).task;
+          final taskState = state is EditTaskLoaded
+              ? state.task
+              : (state as EditTaskSuccess).task;
           final cubit = context.read<EditTaskCubit>();
           final isCompleted = taskState.isDone;
-          final statusText = isCompleted ? 'Done' : 'In Progress';
-          final statusColor = isCompleted ? Colors.green : Colors.orange;
-          final statusMsg = isCompleted ? 'Congrats!' : "Believe you can, and you're halfway there.";
+          final isMissed = taskState.isMissed;
+
+          final statusText = isCompleted
+              ? 'Done'
+              : isMissed
+                  ? 'Missed'
+                  : 'In Progress';
+
+          final statusColor = isCompleted
+              ? Colors.green
+              : isMissed
+                  ? Colors.red
+                  : Colors.orange;
+
+          final statusMsg = isCompleted
+              ? 'Congrats!'
+              : isMissed
+                  ? "You missed this task."
+                  : "Believe you can, and you're halfway there.";
 
           return Scaffold(
             backgroundColor: const Color(0xFFF5F7F6),
@@ -43,19 +62,25 @@ class EditTaskPage extends StatelessWidget {
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
                 onPressed: () => Navigator.pop(context),
               ),
-              title: const Text("Edit Task", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              title: const Text("Edit Task",
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold)),
               centerTitle: true,
               actions: [
                 Padding(
                   padding: const EdgeInsets.only(right: 12.0),
                   child: ElevatedButton.icon(
                     onPressed: cubit.deleteTask,
-                    icon: const Icon(Icons.delete, color: Colors.white, size: 18),
-                    label: const Text("Delete", style: TextStyle(color: Colors.white)),
+                    icon:
+                        const Icon(Icons.delete, color: Colors.white, size: 18),
+                    label: const Text("Delete",
+                        style: TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       elevation: 0,
                     ),
                   ),
@@ -104,7 +129,8 @@ class EditTaskPage extends StatelessWidget {
                             const SizedBox(height: 6),
                             Text(
                               statusMsg,
-                              style: const TextStyle(fontSize: 14, color: Colors.black87),
+                              style: const TextStyle(
+                                  fontSize: 14, color: Colors.black87),
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -116,7 +142,8 @@ class EditTaskPage extends StatelessWidget {
                   const SizedBox(height: 20),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
@@ -174,13 +201,15 @@ class EditTaskPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                     ),
                     onChanged: cubit.updateTitle,
                   ),
                   const SizedBox(height: 16),
                   TextField(
-                    controller: TextEditingController(text: taskState.description),
+                    controller:
+                        TextEditingController(text: taskState.description),
                     maxLines: 3,
                     decoration: InputDecoration(
                       filled: true,
@@ -190,14 +219,16 @@ class EditTaskPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                     ),
                     onChanged: cubit.updateDescription,
                   ),
                   const SizedBox(height: 16),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
@@ -209,12 +240,14 @@ class EditTaskPage extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           '30 June, 2022', // Replace with actual date
-                          style: const TextStyle(fontSize: 14, color: Colors.black87),
+                          style: const TextStyle(
+                              fontSize: 14, color: Colors.black87),
                         ),
                         const Spacer(),
                         Text(
                           '10:00 pm', // Replace with actual time
-                          style: const TextStyle(fontSize: 14, color: Colors.black87),
+                          style: const TextStyle(
+                              fontSize: 14, color: Colors.black87),
                         ),
                       ],
                     ),
@@ -229,10 +262,13 @@ class EditTaskPage extends StatelessWidget {
                             onPressed: cubit.markDone,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
-                            child: const Text("Mark as Done", style: TextStyle(fontSize: 16, color: Colors.white)),
+                            child: const Text("Mark as Done",
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.white)),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -244,12 +280,16 @@ class EditTaskPage extends StatelessWidget {
                       onPressed: cubit.saveTask,
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.green, width: 2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text(
                         "Update",
-                        style: TextStyle(fontSize: 16, color: Colors.green, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),

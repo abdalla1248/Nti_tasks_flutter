@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:todapp/core/utils/app_assets.dart';
+import 'package:todapp/core/utils/app_colors.dart';
 import 'package:todapp/core/widgets/app_button.dart';
 import 'package:todapp/core/widgets/custom_text_field.dart';
 import 'package:todapp/core/helpers/validator_helper.dart';
@@ -48,6 +49,7 @@ class RegisterPage extends StatelessWidget {
           final cubit = RegisterCubit.get(context);
 
           return Scaffold(
+            backgroundColor: AppColors.background,
             body: Form(
               key: cubit.formKey,
               child: SingleChildScrollView(
@@ -124,8 +126,8 @@ class RegisterPage extends StatelessWidget {
                             showVisibilityToggle: true,
                             onVisibilityToggle:
                                 cubit.toggleConfirmPasswordVisibility,
-                            validator: (value) => ValidatorHelper
-                                .validateConfirmPassword(
+                            validator: (value) =>
+                                ValidatorHelper.validateConfirmPassword(
                                     value, cubit.passwordController.text),
                           ),
                         ],
@@ -157,8 +159,7 @@ class RegisterPage extends StatelessWidget {
                           onPressed: () {
                             Navigator.pushReplacement(
                               context,
-                              MaterialPageRoute(
-                                  builder: (_) => const Login()),
+                              MaterialPageRoute(builder: (_) => const Login()),
                             );
                           },
                           child: const Text('Login'),

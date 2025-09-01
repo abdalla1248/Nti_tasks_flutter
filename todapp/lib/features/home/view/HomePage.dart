@@ -20,10 +20,21 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => HomeCubit()..loadData(savedUsername: username),
+      create: (_) => HomeCubit()..setUsername(username),
       child: BlocBuilder<HomeCubit, HomeState>(
         builder: (context, state) {
           final cubit = context.read<HomeCubit>();
+
+          Color getStatusColor(TaskModel task) {
+            final now = DateTime.now();
+            final taskDate = task.taskDateTime;
+
+            if (!task.isDone && taskDate.isBefore(now)) {
+              return Colors.red;
+            } else {
+              return Colors.green.withAlpha(100);
+            }
+          }
 
           return Scaffold(
             backgroundColor: const Color(0xFFF5F7F6),
@@ -35,58 +46,50 @@ class HomePage extends StatelessWidget {
                     tasks: cubit.tasks.map((t) => t.toJson()).toList(),
                   ),
                 );
-
-                if (result != null && result is TaskModel) {
-                  await cubit.addTask(result);
-                }
+                // No manual add needed; snapshot listener updates automatically
               },
               backgroundColor: AppColors.primary,
               child: const Icon(Icons.add, color: AppColors.card),
             ),
             body: SafeArea(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await cubit.loadData(savedUsername: state.username);
-                },
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Column(
-                    children: [
-                      HeaderSection(
-                        name: state.username,
-                        onEdit: () async {
-                          final updatedName = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  UserUpdatePage(initialName: state.username),
-                            ),
-                          );
-                          if (updatedName != null) {
-                            cubit.setUsername(updatedName);
-                          }
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    HeaderSection(
+                      name: state.username,
+                      onEdit: () async {
+                        final updatedName = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                UserUpdatePage(initialName: state.username),
+                          ),
+                        );
+                        if (updatedName != null) {
+                          cubit.setUsername(updatedName);
+                        }
+                      },
+                    ),
+                    if (cubit.tasks.isNotEmpty) ...[
+                      ProgressCard(
+                        progressPercentage: cubit.progressPercentage,
+                        tasks: cubit.tasks,
+                      ),
+                      InProgressSection(
+                        inProgressTasks: cubit.inProgressTasks,
+                        markCompleted: (TaskModel task) async {
+                          await cubit.markTaskCompleted(task);
                         },
                       ),
-                      if (cubit.tasks.isNotEmpty) ...[
-                        ProgressCard(
-                          progressPercentage: cubit.progressPercentage,
-                          tasks: cubit.tasks,
-                        ),
-                        InProgressSection(
-                          inProgressTasks: cubit.inProgressTasks,
-                          markCompleted: (TaskModel task) async {
-                            await cubit.markTaskCompleted(task);
-                          },
-                        ),
-                        TaskGroupsSection(
-                          taskTypes: cubit.taskTypes,
-                          tasks: cubit.tasks,
-                        ),
-                        const SizedBox(height: 80),
-                      ] else
-                        const EmptyState(),
-                    ],
-                  ),
+                      TaskGroupsSection(
+                        taskTypes: cubit.taskTypes,
+                        tasks: cubit.tasks,
+                      ),
+                      const SizedBox(height: 80),
+                    ] else
+                      const EmptyState(),
+                  ],
                 ),
               ),
             ),

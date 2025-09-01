@@ -8,7 +8,7 @@ class UserUpdatePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController _controller =
+    final TextEditingController controller =
         TextEditingController(text: initialName);
 
     return Scaffold(
@@ -21,7 +21,7 @@ class UserUpdatePage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
-              controller: _controller,
+              controller: controller,
               decoration: const InputDecoration(
                 labelText: 'User Name',
                 border: OutlineInputBorder(),
@@ -39,7 +39,7 @@ class UserUpdatePage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(15)),
               ),
               onPressed: () {
-                final newName = _controller.text.trim();
+                final newName = controller.text.trim();
                 if (newName.isNotEmpty) {
                   Navigator.pop(context, newName); // send name back
                 } else {

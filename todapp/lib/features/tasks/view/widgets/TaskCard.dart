@@ -21,17 +21,24 @@ class TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final taskDate = task.taskDateTime;
+    final taskDate = task.taskDateTime; // ✅ use computed property
 
     final isCompleted = task.isDone;
     final isMissed = !isCompleted &&
         taskDate.isBefore(now) &&
         !isSameDay(taskDate, now);
     final isUpcoming = !isCompleted && taskDate.isAfter(now);
+    final isInProgress = !isCompleted && isSameDay(taskDate, now);
 
     final status = isCompleted
         ? 'Done'
-        : (isMissed ? 'Missed' : (isUpcoming ? 'Upcoming' : 'In Progress'));
+        : isMissed
+            ? 'Missed'
+            : isUpcoming
+                ? 'Upcoming'
+                : isInProgress
+                    ? 'In Progress'
+                    : '';
 
     final statusColor = isMissed
         ? Colors.red
@@ -39,7 +46,7 @@ class TaskCard extends StatelessWidget {
             ? Colors.green
             : isUpcoming
                 ? Colors.blue
-                : Colors.orange;
+                : Colors.lightGreen.withAlpha(100);
 
     final statusIcon = isMissed
         ? Icons.error_outline
@@ -137,7 +144,7 @@ class TaskCard extends StatelessWidget {
                         status,
                         style: const TextStyle(
                           color: Colors.white,
-            fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.bold,
                           fontSize: 11,
                         ),
                       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class BookmarkView extends StatefulWidget {
+  const BookmarkView({super.key});
+
   @override
   State<BookmarkView> createState() => _BookmarkViewState();
 }

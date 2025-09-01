@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,7 +8,9 @@ import '../../tasks/data/repo/task_repo.dart';
 import 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
-  HomeCubit() : super(HomeState());
+  HomeCubit() : super(HomeState()) {
+    _listenTasks();
+  }
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -15,7 +18,12 @@ class HomeCubit extends Cubit<HomeState> {
   final List<TaskModel> _tasks = [];
   final List<Map<String, dynamic>> _taskTypes = [
     {"title": "Home", "icon": Icons.home, "color": Colors.pink, "count": 0},
-    {"title": "Personal", "icon": Icons.person, "color": Colors.green, "count": 0},
+    {
+      "title": "Personal",
+      "icon": Icons.person,
+      "color": Colors.green,
+      "count": 0
+    },
     {"title": "Work", "icon": Icons.work, "color": Colors.black, "count": 0},
   ];
 
@@ -31,69 +39,76 @@ class HomeCubit extends Cubit<HomeState> {
   List<TaskModel> get inProgressTasks =>
       _tasks.where((t) => !t.isDone).toList();
 
-  /// Load username and tasks together
-  Future<void> loadData({String? savedUsername}) async {
-    // 1️⃣ Set username first
-    if (savedUsername != null) {
-      emit(state.copyWith(username: savedUsername));
-    }
-
-    // 2️⃣ Load tasks from Firestore
+  /// Listen to Firestore tasks for the current user
+  void _listenTasks() {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    final result = await TaskRepo().getTasks(user.uid);
-    result.fold(
-      (error) => emit(state.copyWith(tasks: [])),
-      (tasksFromDb) {
-        _tasks.clear();
-        _tasks.addAll(tasksFromDb);
-        _updateTaskCounts();
-        emit(state.copyWith(tasks: List.from(_tasks)));
-      },
-    );
+    _firestore
+        .collection('tasks')
+        .where('userId', isEqualTo: user.uid)
+        .snapshots()
+        .listen((snapshot) {
+      _tasks.clear();
+      _tasks.addAll(snapshot.docs
+          .map((doc) =>
+              TaskModel.fromJson(doc.data() as Map<String, dynamic>, doc.id))
+          .toList());
+
+      _updateTaskCounts();
+      emit(state.copyWith(tasks: List.from(_tasks)));
+    });
   }
 
-  /// Add a new task
+  /// Add a new task (Firestore handles updating the list automatically)
   Future<void> addTask(TaskModel task) async {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    final result = await TaskRepo().addTask(task.copyWith(userId: user.uid));
-    result.fold(
-      (error) => debugPrint("Error adding task: $error"),
-      (newTask) {
-        _tasks.add(newTask);
-        _updateTaskCounts();
-        emit(state.copyWith(tasks: List.from(_tasks)));
-      },
-    );
+    // Always enforce the userId field
+    final taskWithUser = task.copyWith(userId: user.uid);
+
+    await TaskRepo().addTask(taskWithUser);
   }
 
-  /// Mark task as completed
+  /// Update a task
   Future<void> markTaskCompleted(TaskModel task) async {
-    final index = _tasks.indexWhere((t) => t.id == task.id);
-    if (index == -1) return;
-
-    final updatedTask = _tasks[index].copyWith(isDone: true);
-    final result = await TaskRepo().updateTask(updatedTask);
-
-    result.fold(
-      (error) => debugPrint("Error updating task: $error"),
-      (_) {
-        _tasks[index] = updatedTask;
-        _updateTaskCounts();
-        emit(state.copyWith(tasks: List.from(_tasks)));
-      },
-    );
+    final updatedTask = task.copyWith(isDone: true);
+    await TaskRepo().updateTask(updatedTask);
+    // Firestore listener will update _tasks automatically
   }
 
-  /// Update username locally
-  void setUsername(String name) {
+  void updateTask(TaskModel updatedTask) async {
+    await TaskRepo().updateTask(updatedTask);
+  }
+
+  void deleteTask(String taskId) async {
+    _tasks.removeWhere((task) => task.id == taskId);
+    emit(state.copyWith(tasks: List.from(_tasks)));
+
+    try {
+      await TaskRepo().deleteTask(taskId);
+    } catch (e) {
+      _listenTasks();
+    }
+  }
+
+  void setUsername(String name) async {
     emit(state.copyWith(username: name));
+
+    final user = _auth.currentUser;
+    if (user != null) {
+      try {
+        await _firestore.collection("users").doc(user.uid).set({
+          "username": name,
+          "email": user.email,
+        }, SetOptions(merge: true));
+      } catch (e) {
+        debugPrint("Failed to save username in Firestore: $e");
+      }
+    }
   }
 
-  /// Update task counts per type
   void _updateTaskCounts() {
     for (var type in _taskTypes) {
       type["count"] = _tasks.where((t) => t.type == type["title"]).length;

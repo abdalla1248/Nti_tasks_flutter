@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class SearchScreen extends StatelessWidget {
-  const SearchScreen({super.key});
+class LocationView extends StatelessWidget {
+  const LocationView({super.key, required getloc});
 
   @override
   Widget build(BuildContext context) {
@@ -9,7 +9,7 @@ class SearchScreen extends StatelessWidget {
       body: Stack(
         children: [
           // Background Map
-          Container(
+          SizedBox(
             height: double.infinity,
             width: double.infinity,
             child: Image.network(
@@ -42,7 +42,7 @@ class SearchScreen extends StatelessWidget {
                       child: TextField(
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: "Ahmed Saber",
+                          hintText: "Search for a location...",
                           hintStyle: TextStyle(color: Colors.grey[700]),
                         ),
                       ),

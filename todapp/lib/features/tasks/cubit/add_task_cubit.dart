@@ -74,6 +74,8 @@ class AddTaskCubit extends Cubit<AddTaskState> {
         isDone: false,
         userId: user.uid,
         createdAt: Timestamp.now(),
+        date: selectedDate,   
+        time: selectedTime,   
       );
 
       final Either<String, TaskModel> result = await _taskRepo.addTask(task);

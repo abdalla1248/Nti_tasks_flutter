@@ -79,7 +79,7 @@ Future<Map<String, dynamic>> login({
       await docRef.set(userData);
       return userData;
     } else {
-      // ✅ Get stored user name from Firestore
+      //  Get stored user name from Firestore
       return doc.data()!;
     }
   } on FirebaseAuthException catch (e) {

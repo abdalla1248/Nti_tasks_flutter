@@ -52,16 +52,23 @@ class TaskModel {
       'userId': userId,
       'createdAt': createdAt,
       'date': date != null ? Timestamp.fromDate(date!) : null,
-      'time': time != null ? {'hour': time!.hour, 'minute': time!.minute} : null,
+      'time':
+          time != null ? {'hour': time!.hour, 'minute': time!.minute} : null,
     };
   }
 
-  /// ✅ Computed property to combine `date` + `time` into a single DateTime
+  // Computed property to combine `date` + `time` into a single DateTime
   DateTime get taskDateTime {
     if (date == null && time == null) return createdAt.toDate();
     if (date == null) return DateTime.now();
     if (time == null) return DateTime(date!.year, date!.month, date!.day);
-    return DateTime(date!.year, date!.month, date!.day, time!.hour, time!.minute);
+    return DateTime(
+        date!.year, date!.month, date!.day, time!.hour, time!.minute);
+  }
+
+  bool get isMissed {
+    if (isDone) return false; 
+    return taskDateTime.isBefore(DateTime.now());
   }
 
   TaskModel copyWith({

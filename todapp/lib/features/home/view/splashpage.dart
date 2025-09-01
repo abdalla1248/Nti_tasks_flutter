@@ -9,8 +9,8 @@ import 'HomePage.dart';
 import 'startpage.dart';
 import '../cubit/splash_cubit.dart';
 
-class SplashCard extends StatelessWidget {
-  const SplashCard({super.key});
+class Splashview extends StatelessWidget {
+  const Splashview({super.key});
 
   @override
   Widget build(BuildContext context) {

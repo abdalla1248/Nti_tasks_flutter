@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:todapp/core/helpers/navigate.dart';
+import 'package:todapp/core/utils/app_text_styles.dart';
 import '../../cubit/filter_dialog_cubit.dart';
+import '../../cubit/filter_dialog_state.dart';
 
 class FilterDialog extends StatelessWidget {
   const FilterDialog({super.key});
@@ -18,7 +21,8 @@ class FilterDialog extends StatelessWidget {
             builder: (context, constraints) {
               return Dialog(
                 backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 child: Padding(
                   padding: EdgeInsets.all(constraints.maxWidth < 400 ? 12 : 20),
                   child: SingleChildScrollView(
@@ -27,14 +31,36 @@ class FilterDialog extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Category chips (2 rows)
-                        _buildFilterRow(categories.sublist(0, 3), state.selectedCategory, (c) => context.read<FilterDialogCubit>().setCategory(c), constraints),
+                        _buildFilterRow(
+                            categories.sublist(0, 3),
+                            state.selectedCategory,
+                            (c) => context
+                                .read<FilterDialogCubit>()
+                                .setCategory(c),
+                            constraints),
                         const SizedBox(height: 8),
-                        _buildFilterRow([categories[3]], state.selectedCategory, (c) => context.read<FilterDialogCubit>().setCategory(c), constraints),
+                        _buildFilterRow(
+                            [categories[3]],
+                            state.selectedCategory,
+                            (c) => context
+                                .read<FilterDialogCubit>()
+                                .setCategory(c),
+                            constraints),
                         const SizedBox(height: 18),
                         // Status chips (2 rows)
-                        _buildFilterRow(statuses.sublist(0, 3), state.selectedStatus, (s) => context.read<FilterDialogCubit>().setStatus(s), constraints),
+                        _buildFilterRow(
+                            statuses.sublist(0, 3),
+                            state.selectedStatus,
+                            (s) =>
+                                context.read<FilterDialogCubit>().setStatus(s),
+                            constraints),
                         const SizedBox(height: 8),
-                        _buildFilterRow([statuses[3]], state.selectedStatus, (s) => context.read<FilterDialogCubit>().setStatus(s), constraints),
+                        _buildFilterRow(
+                            [statuses[3]],
+                            state.selectedStatus,
+                            (s) =>
+                                context.read<FilterDialogCubit>().setStatus(s),
+                            constraints),
                         const SizedBox(height: 22),
                         // Date/time picker
                         GestureDetector(
@@ -45,17 +71,14 @@ class FilterDialog extends StatelessWidget {
                               firstDate: DateTime(2000),
                               lastDate: DateTime(2100),
                             );
-                            if (d != null) {
-                              final t = await showTimePicker(
-                                context: context,
-                                initialTime: state.pickedTime ?? TimeOfDay.now(),
-                              );
-                              context.read<FilterDialogCubit>().setDateTime(d, t);
-                            }
+                            context.read<FilterDialogCubit>().setDateTime(d);
                           },
                           child: Container(
                             width: double.infinity,
-                            padding: EdgeInsets.symmetric(horizontal: constraints.maxWidth < 400 ? 10 : 14, vertical: 14),
+                            padding: EdgeInsets.symmetric(
+                                horizontal:
+                                    constraints.maxWidth < 400 ? 10 : 14,
+                                vertical: 14),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(14),
@@ -70,7 +93,8 @@ class FilterDialog extends StatelessWidget {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.calendar_today, color: Colors.green),
+                                const Icon(Icons.calendar_today,
+                                    color: Colors.green),
                                 const SizedBox(width: 10),
                                 Text(
                                   state.pickedDate != null
@@ -78,15 +102,12 @@ class FilterDialog extends StatelessWidget {
                                       : "Any date",
                                   style: const TextStyle(fontSize: 15),
                                 ),
-                                if (state.pickedTime != null && state.pickedDate != null) ...[
-                                  const SizedBox(width: 10),
-                                  Text(_formatTime(state.pickedTime!), style: const TextStyle(fontSize: 15)),
-                                ],
-                                const Spacer(),
                                 if (state.pickedDate != null)
                                   IconButton(
                                     icon: const Icon(Icons.clear, size: 18),
-                                    onPressed: () => context.read<FilterDialogCubit>().clearDateTime(),
+                                    onPressed: () => context
+                                        .read<FilterDialogCubit>()
+                                        .clearDateTime(),
                                   )
                               ],
                             ),
@@ -106,9 +127,9 @@ class FilterDialog extends StatelessWidget {
                               elevation: 0,
                             ),
                             onPressed: () {
-                              Navigator.pop(context, state);
+                              AppNavigator.pop(context, state);
                             },
-                            child: const Text("Filter", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+                            child: Text("Filter", style: AppTextStyles.button),
                           ),
                         ),
                       ],
@@ -123,7 +144,8 @@ class FilterDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildFilterRow(List<String> items, String selectedItem, Function(String) onSelected, BoxConstraints constraints) {
+  Widget _buildFilterRow(List<String> items, String selectedItem,
+      Function(String) onSelected, BoxConstraints constraints) {
     return Row(
       children: items.map((item) {
         final isSelected = selectedItem == item;
@@ -159,15 +181,20 @@ class FilterDialog extends StatelessWidget {
 
   static String _monthName(int month) {
     const months = [
-      '', 'January', 'February', 'March', 'April', 'May', 'June', 'July',
-      'August', 'September', 'October', 'November', 'December'
+      '',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
     ];
     return months[month];
-  }
-
-  static String _formatTime(TimeOfDay t) {
-    final hour = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
-    final period = t.period == DayPeriod.am ? 'am' : 'pm';
-    return '${hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')} $period';
   }
 }

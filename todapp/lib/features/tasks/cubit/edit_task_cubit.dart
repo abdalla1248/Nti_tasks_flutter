@@ -10,20 +10,18 @@ class EditTaskCubit extends Cubit<EditTaskState> {
 
   EditTaskCubit(this.taskRepo) : super(EditTaskInitial());
 
-  
   void init(TaskModel task) {
     _task = task;
     emit(EditTaskLoaded(task: _task));
   }
 
-  // Update fields
   void updateTitle(String title) {
     _task = _task.copyWith(title: title);
     emit(EditTaskLoaded(task: _task));
   }
 
-  void updateDescription(String desc) {
-    _task = _task.copyWith(description: desc);
+  void updateDescription(String description) {
+    _task = _task.copyWith(description: description);
     emit(EditTaskLoaded(task: _task));
   }
 
@@ -39,10 +37,12 @@ class EditTaskCubit extends Cubit<EditTaskState> {
 
   Future<void> saveTask() async {
     emit(EditTaskLoading());
-    final result = await taskRepo.updateTask(_task);
+    // Keep original userId to satisfy Firestore rules
+    final updatedTask = _task.copyWith(userId: _task.userId);
+    final result = await taskRepo.updateTask(updatedTask);
     result.fold(
       (err) => emit(EditTaskError(err)),
-      (_) => emit(EditTaskSuccess(task: _task)),
+      (_) => emit(EditTaskSuccess(task: updatedTask)),
     );
   }
 

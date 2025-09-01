@@ -1,98 +1,145 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_app/feature/explore/data/repo/news_repo.dart';
+
+import 'cubit/news_cubit.dart';
+import 'cubit/news_state.dart';
+import 'data/model/news_model.dart';
 
 class ExploreView extends StatelessWidget {
   final List<String> categories = ['Travel', 'Technology', 'Business'];
-  final List<Map<String, String>> articles = [
-    {
-      'image': 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca',
-      'title': 'Uncovering the Hidden Gems of the Amazon Forest',
-      'author': 'Mary',
-      'date': 'Sep 12, 2023',
-    },
-    {
-      'image': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-      'title': 'Experience the Serenity of Japan’s Tradition',
-      'author': 'Luc Chiba',
-      'date': 'Sep 10, 2023',
-    },
-    {
-      'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
-      'title': 'A Journey Through Time: Discovering the New Year',
-      'author': 'John Doe',
-      'date': 'Sep 8, 2023',
-    },
-    {
-      'image': 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca',
-      'title': 'Chasing the Northern Lights: A Winter in Finland',
-      'author': 'Jane Smith',
-      'date': 'Sep 6, 2023',
-    },
-  ];
+
+   ExploreView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return BlocProvider(
+      create: (context) => NewsCubit(NewsRepo())..getNews(),
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text('Explore', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search, color: Colors.black),
-            onPressed: () {},
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: const Text(
+            'Explore',
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 36,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: categories.length,
-                separatorBuilder: (_, __) => SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  return Chip(
-                    label: Text(categories[index]),
-                    backgroundColor: Colors.grey[200],
-                  );
-                },
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search, color: Colors.black),
+              onPressed: () {},
+            ),
+          ],
+        ),
+        body: BlocBuilder<NewsCubit, NewsState>(
+          builder: (context, state) {
+            if (state is NewsLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is NewsError) {
+              return Center(child: Text('Error: ${state.error}'));
+            } else if (state is NewsSuccess) {
+              final articles = state.model.articles ?? [];
+
+              if (articles.isEmpty) {
+                return const Center(child: Text('No articles available'));
+              }
+
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Categories
+                    SizedBox(
+                      height: 36,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: categories.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          return Chip(
+                            label: Text(categories[index]),
+                            backgroundColor: Colors.grey[200],
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Featured Article
+                    _featuredArticleCard(articles.first),
+                    const SizedBox(height: 16),
+
+                    // Articles List
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: articles.length,
+                        itemBuilder: (context, index) {
+                          return _articleListItem(articles[index]);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+
+        // Bottom Navigation
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: 1,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.black,
+          type: BottomNavigationBarType.fixed,
+          items: [
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.home),
+              label: 'Home',
+              activeIcon: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.home, color: Colors.white),
+                    SizedBox(width: 6),
+                    Text(
+                      'Home',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
             ),
-            SizedBox(height: 16),
-            _featuredArticleCard(),
-            SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: articles.length,
-                itemBuilder: (context, index) {
-                  final article = articles[index];
-                  return _articleListItem(article);
-                },
-              ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.explore),
+              label: 'Explore',
+            ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.bookmark),
+              label: 'Bookmark',
+            ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profile',
             ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Explore'),
-          BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Bookmark'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-      ),
     );
   }
 
-  Widget _featuredArticleCard() {
+  Widget _featuredArticleCard(Articles? article) {
+    if (article == null) return const SizedBox.shrink();
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
@@ -100,9 +147,9 @@ class ExploreView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: Image.network(
-              'https://images.unsplash.com/photo-1465101046530-73398c7f28ca',
+              article.urlToImage ?? '',
               height: 120,
               width: double.infinity,
               fit: BoxFit.cover,
@@ -111,8 +158,9 @@ class ExploreView extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Text(
-              'Uncovering the Hidden Gems of the Amazon Forest',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              article.title ?? '',
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ),
         ],
@@ -120,21 +168,26 @@ class ExploreView extends StatelessWidget {
     );
   }
 
-  Widget _articleListItem(Map<String, String> article) {
+  Widget _articleListItem(Articles article) {
     return ListTile(
-      contentPadding: EdgeInsets.symmetric(vertical: 8),
+      contentPadding: const EdgeInsets.symmetric(vertical: 8),
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Image.network(
-          article['image'] ?? '',
+          article.urlToImage ?? '',
           width: 60,
           height: 60,
           fit: BoxFit.cover,
         ),
       ),
-      title: Text(article['title'] ?? '', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-      subtitle: Text('${article['author']} • ${article['date']}', style: TextStyle(color: Colors.grey, fontSize: 12)),
-      trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+      title: Text(
+        article.title ?? '',
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+      ),
+      subtitle: Text(
+        '${article.author ?? "Unknown"} • ${article.publishedAt?.substring(0, 10) ?? ""}',
+        style: const TextStyle(color: Colors.grey, fontSize: 12),
+      ),
     );
   }
 }

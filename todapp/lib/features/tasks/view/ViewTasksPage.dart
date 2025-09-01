@@ -9,34 +9,14 @@ import 'widgets/ResultsHeader.dart';
 import 'widgets/FilterButton.dart';
 import 'widgets/filter_dialog.dart';
 
-class ViewTasksPage extends StatefulWidget {
+class ViewTasksPage extends StatelessWidget {
   final List<TaskModel> tasks;
-
   const ViewTasksPage({super.key, required this.tasks});
-
-  @override
-  State<ViewTasksPage> createState() => _ViewTasksPageState();
-}
-
-class _ViewTasksPageState extends State<ViewTasksPage> {
-  late final TextEditingController _searchController;
-
-  @override
-  void initState() {
-    super.initState();
-    _searchController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ViewTasksCubit(initialTasks: widget.tasks),
+      create: (_) => ViewTasksCubit(initialTasks: tasks),
       child: BlocBuilder<ViewTasksCubit, ViewTasksState>(
         builder: (context, state) {
           final cubit = context.read<ViewTasksCubit>();
@@ -46,9 +26,9 @@ class _ViewTasksPageState extends State<ViewTasksPage> {
             final taskDate = task.taskDateTime;
 
             if (!task.isDone && taskDate.isBefore(now)) {
-              return Colors.red;
+              return Colors.red; 
             } else {
-              return Colors.green.withAlpha(100);
+              return Colors.green.withAlpha(100); 
             }
           }
 
@@ -70,44 +50,62 @@ class _ViewTasksPageState extends State<ViewTasksPage> {
               ),
               centerTitle: true,
             ),
-            body: Column(
-              children: [
-                SearchBarWidget(
-                  controller: _searchController,
-                  onChanged: cubit.searchTasks,
-                ),
-                ResultsHeader(count: state.filteredTasks.length),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: TaskListView(
-                    tasks: state.filteredTasks,
-                    getStatusColor: getStatusColor,
-                    onTapTask: (task) async {
-                      final updatedTask = await Navigator.push<TaskModel?>(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => EditTaskPage(task: task),
-                        ),
-                      );
-                      if (updatedTask != null) {
-                        cubit.updateTask(updatedTask);
-                      }
-                    },
+            body: RefreshIndicator(
+              onRefresh: () async {
+                final userId =
+                    state.tasks.isNotEmpty ? state.tasks.first.userId : '';
+                if (userId.isNotEmpty) {
+                  await cubit.loadTasks(userId);
+                }
+              },
+              child: Column(
+                children: [
+                  SearchBarWidget(
+                    controller: TextEditingController(
+                      text: state.searchQuery, 
+                    ),
+                    onChanged: cubit.searchTasks,
                   ),
-                ),
-              ],
+                  ResultsHeader(count: state.filteredTasks.length),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: TaskListView(
+                      tasks: state.filteredTasks,
+                      getStatusColor: getStatusColor,
+                      onTapTask: (task) async {
+                        final result =
+                            await Navigator.push<Map<String, dynamic>?>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EditTaskPage(task: task),
+                          ),
+                        );
+
+                        if (result != null) {
+                          if (result['action'] == 'update') {
+                            cubit.updateTask(result['task']);
+                          } else if (result['action'] == 'delete') {
+                            cubit.deleteTask(task.id);
+                          }
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
             floatingActionButton: FilterButton(
               onPressed: () async {
                 final filterState = await showDialog(
                   context: context,
                   builder: (_) => BlocProvider.value(
-                    value: context.read<ViewTasksCubit>(),
+                    value: cubit,
                     child: const FilterDialog(),
                   ),
                 );
+
                 if (filterState != null) {
-                  context.read<ViewTasksCubit>().filterTasks(
+                  cubit.filterTasks(
                     category: filterState.selectedCategory,
                     status: filterState.selectedStatus,
                     date: filterState.pickedDate,

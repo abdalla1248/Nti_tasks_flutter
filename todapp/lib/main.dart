@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'features/home/view/splashpage.dart';
 import 'features/home/view/HomePage.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'features/home/view/splashpage.dart';
 import 'firebase_options.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/profile/cubit/settings_cubit.dart';
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         designSize: const Size(375, 812),
         builder: (context, widget) => MaterialApp(
           debugShowCheckedModeBanner: false,
-          home: SplashCard(),
+          home: const Splashview(),
           routes: {
             '/home': (_) => const HomePage(username: ''),
           },

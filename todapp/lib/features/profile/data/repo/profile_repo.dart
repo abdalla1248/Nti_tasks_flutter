@@ -6,4 +6,8 @@ class ProfileRepo {
     await Future.delayed(const Duration(seconds: 1));
     return ProfileModel(uid: userId, name: 'User', email: 'user@email.com', image: '');
   }
+  Future<void> updateusername(userid)
+  async {
+    
+  }
 }
