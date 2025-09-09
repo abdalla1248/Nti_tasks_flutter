@@ -1,221 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_app/core/helper/app_navigator.dart';
+import 'package:news_app/core/utils/app_assets.dart';
+import 'package:news_app/feature/bookmark/cubit/bookmark_cubit.dart';
+import 'package:news_app/features/article_view/views/article_view.dart';
+import 'package:news_app/features/explore_view/data/models/articles_respones_model.dart';
 
-class BookmarkView extends StatefulWidget {
-  const BookmarkView({super.key});
-
-  @override
-  State<BookmarkView> createState() => _BookmarkViewState();
-}
-
-class _BookmarkViewState extends State<BookmarkView> {
-  final List<Map<String, String>> bookmarks = [
-    {
-      'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
-      'title': 'How to Setup Your Workspace',
-      'category': 'Interior',
-    },
-    {
-      'image': 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca',
-      'title': 'Discovering Hidden Gems: 8 Off-The-Beaten-Path...',
-      'category': 'Travel',
-    },
-    {
-      'image': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-      'title': 'Exploring the World’s Best Beaches: Top 5 Picks',
-      'category': 'Travel',
-    },
-    {
-      'image': 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca',
-      'title': 'Travel Destinations That Won’t Break the Bank',
-      'category': 'Travel',
-    },
-    {
-      'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
-      'title': 'How Working Remotely Will Make You More Happy',
-      'category': 'Business',
-    },
-    {
-      'image': 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca',
-      'title': 'Destinations for Authentic Local Experiences',
-      'category': 'Travel',
-    },
-    {
-      'image': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-      'title': 'A Guide to Seasonal Gardening',
-      'category': 'Travel',
-    },
-  ];
-
-  int? _deleteIndex;
-
+class BookmarkView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          'Bookmark',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
+        title: const Text('Bookmarks'),
       ),
-      body: Stack(
-        children: [
-          ListView.builder(
-            padding: EdgeInsets.only(bottom: 70),
-            itemCount: bookmarks.length,
-            itemBuilder: (context, index) {
-              final item = bookmarks[index];
-              return Dismissible(
-                key: Key(item['title']!),
-                direction: DismissDirection.startToEnd,
-                background: Container(
-                  alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Icon(Icons.delete, color: Colors.white),
-                ),
-                onDismissed: (direction) {
-                  final removedItem = bookmarks[index];
-                  final removedIndex = index;
-
-                  setState(() {
-                    bookmarks.removeAt(index); // Remove temporarily
-                    _deleteIndex = removedIndex; // Show custom dialog
-                  });
-
-                  // Restore if user clicks No
-                  Future.delayed(Duration.zero, () async {
-                    while (_deleteIndex == removedIndex) {
-                      await Future.delayed(Duration(milliseconds: 50));
-                    }
-                    if (!bookmarks.contains(removedItem)) {
-                      setState(() {
-                        bookmarks.insert(removedIndex, removedItem);
-                      });
-                    }
-                  });
-                },
-                child: ListTile(
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  title: Text(
-                    item['title'] ?? '',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
-                  subtitle: Text(
-                    item['category'] ?? '',
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
-                  ),
-                  trailing: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      item['image'] ?? '',
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
+      body: Builder(
+        builder: (context) {
+          return BlocBuilder<BookmarkCubit, List<ArticlesModel>>(
+            builder: (context, bookmarks) {
+              if (bookmarks.isEmpty) {
+                return const Center(
+                  child: Text('No bookmarks yet!'),
+                );
+              }
+          
+              return Builder(
+                builder: (context) {
+                  return ListView.builder(
+                    itemCount: bookmarks.length,
+                    itemBuilder: (context, index) {
+                      final article = bookmarks[index];
+                  
+                      return Card(
+                        margin: const EdgeInsets.all(8),
+                        child: ListTile(
+                          onTap: () {
+                            AppNavigator.goTo(
+                              context,
+                              ArticleView(articlesModel: article),
+                            );
+                          },
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: article.urlToImage != null &&
+                                    article.urlToImage!.isNotEmpty
+                                ? Image.network(
+                                    article.urlToImage!,
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.asset(
+                                    AppAssets.articleImage,
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                          title: Text(
+                            article.title ?? 'No Title',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            article.description ?? 'No Description',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              context.read<BookmarkCubit>().removeBookmark(article);
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }
               );
             },
-          ),
-          if (_deleteIndex != null) _buildDeleteDialog(context, _deleteIndex!),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Explore'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.bookmark), label: 'Bookmark'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDeleteDialog(BuildContext context, int index) {
-    final item = bookmarks[index];
-    return Center(
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.8,
-          padding: EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(color: Colors.black26, blurRadius: 10),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Sure you want to delete this item?',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              SizedBox(height: 12),
-              Text(
-                item['title'] ?? '',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-              Text(
-                item['category'] ?? '',
-                style: TextStyle(color: Colors.grey, fontSize: 13),
-              ),
-              SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  item['image'] ?? '',
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: StadiumBorder(),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        bookmarks.removeAt(index);
-                        _deleteIndex = null;
-                      });
-                    },
-                    child: Text('Yes, Delete'),
-                  ),
-                  SizedBox(width: 12),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[300],
-                      shape: StadiumBorder(),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _deleteIndex = null; // Cancel
-                      });
-                    },
-                    child: Text('No', style: TextStyle(color: Colors.black)),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+          );
+        }
       ),
     );
   }

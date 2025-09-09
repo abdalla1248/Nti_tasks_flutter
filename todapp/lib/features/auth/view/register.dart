@@ -9,22 +9,15 @@ import 'package:todapp/core/utils/app_colors.dart';
 import 'package:todapp/core/widgets/app_button.dart';
 import 'package:todapp/core/widgets/custom_text_field.dart';
 import 'package:todapp/core/helpers/validator_helper.dart';
+import 'package:todapp/core/widgets/image_manager/image_manager_view.dart';
 import '../cubit/register_cubit/register_cubit.dart';
 import '../cubit/register_cubit/register_state.dart';
 import 'Login.dart';
+import 'widget/custom_auth_image.dart';
 
 class RegisterPage extends StatelessWidget {
   RegisterPage({super.key});
 
-  final ImagePicker _picker = ImagePicker();
-  final ValueNotifier<File?> _selectedImage = ValueNotifier<File?>(null);
-
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      _selectedImage.value = File(pickedFile.path);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,28 +49,14 @@ class RegisterPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    GestureDetector(
-                      onTap: _pickImage,
-                      child: ValueListenableBuilder<File?>(
-                        valueListenable: _selectedImage,
-                        builder: (_, image, __) {
-                          return image != null
-                              ? Image.file(
-                                  image,
-                                  height: 298.h,
-                                  width: MediaQuery.of(context).size.width,
-                                  fit: BoxFit.cover,
-                                )
-                              : Image.asset(
-                                  AppAssets.flag,
-                                  height: 298.h,
-                                  width: MediaQuery.of(context).size.width,
-                                  fit: BoxFit.cover,
-                                );
-                        },
-                      ),
+                   ImageManagerView(
+                      onImagePicked: (image)=> RegisterCubit.get(context).image = image,
+                      imageBuilder:(image){
+                        return CustomAuthImage(image: FileImage(File(image.path)),);
+                      },
+                      defaultBuilder: CustomAuthImage(),
                     ),
-                    const SizedBox(height: 30),
+                    SizedBox(height: 23.h,),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Column(
@@ -90,6 +69,16 @@ class RegisterPage extends StatelessWidget {
                             ),
                             controller: cubit.emailController,
                             validator: ValidatorHelper.validateEmail,
+                          ),
+                          const SizedBox(height: 20),
+                          CustomTextField(
+                            hintText: 'phone number',
+                            prefixIcon: IconButton(
+                              onPressed: null,
+                              icon: SvgPicture.asset(AppAssets.profile),
+                            ),
+                            controller: cubit.phoneController,
+                            validator: ValidatorHelper.phoneValidator,
                           ),
                           const SizedBox(height: 20),
                           CustomTextField(

@@ -27,9 +27,6 @@ class MyApp extends StatelessWidget {
         builder: (context, widget) => MaterialApp(
           debugShowCheckedModeBanner: false,
           home: const Splashview(),
-          routes: {
-            '/home': (_) => const HomePage(username: ''),
-          },
         ),
       ),
     );

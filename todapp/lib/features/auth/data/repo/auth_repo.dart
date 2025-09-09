@@ -1,11 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:todapp/core/network/api_helper.dart';
+import 'package:todapp/core/network/api_response.dart';
+import 'package:todapp/core/network/end_points.dart';
 
 class AuthRepo {
   // Singleton pattern
   AuthRepo._();
   static final AuthRepo instance = AuthRepo._();
-
+  ApiHelper apiHelper = ApiHelper();
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
 
@@ -13,44 +19,48 @@ class AuthRepo {
   String? getCurrentUserId() => _auth.currentUser?.uid;
 
   /// Register a new user
-  Future<void> register({
+Future<Either<String, Unit>> register({
+    required String phone,
+    required String name,
     required String email,
     required String password,
-    required String name,
-  }) async {
+    XFile? image
+  })async
+  {
     try {
-      final credential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
+      final Map<String, dynamic> data = {
+        'name': name,
+        'email': email,
+        'password': password,
+        'phone': phone,
+      };
+
+      // If image exists, attach as file
+      if (image != null) {
+        data['image'] = await MultipartFile.fromFile(
+          image.path,
+          filename: image.name,
+        );
+      }
+      var response = await apiHelper.postRequest(
+        endPoint: EndPoints.register,
+        data: data
       );
-      final user = credential.user;
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).set({
-          'uid': user.uid,
-          'email': email,
-          'name': name,
-          'image': '',
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+      if(response.status)
+      {
+        return right(unit);
       }
-    } on FirebaseAuthException catch (e) {
-      switch (e.code) {
-        case 'invalid-email':
-          throw Exception('The email format is invalid.');
-        case 'weak-password':
-          throw Exception('The password provided is too weak.');
-        case 'email-already-in-use':
-          throw Exception('An account already exists for that email.');
-        case 'operation-not-allowed':
-          throw Exception('Email/password accounts are not enabled.');
-        default:
-          throw Exception(e.message ?? 'Something went wrong during registration.');
+      else
+      {
+        return left(response.message);
       }
-    } catch (e) {
-      throw Exception(e.toString());
+    }
+    catch (e) {
+      print(e);
+      return Left(ApiResponse.fromError(e).message);
+
     }
   }
-
   /// Login with auto-create Firestore profile if missing
 Future<Map<String, dynamic>> login({
   required String email,

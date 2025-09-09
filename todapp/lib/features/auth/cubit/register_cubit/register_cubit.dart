@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:todapp/features/auth/data/repo/auth_repo.dart';
 import 'register_state.dart';
 
 class RegisterCubit extends Cubit<RegisterState> {
@@ -9,10 +9,12 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   final formKey = GlobalKey<FormState>();
 
+  XFile? image;
   final emailController = TextEditingController();
   final nameController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  final phoneController = TextEditingController();
 
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
@@ -30,37 +32,20 @@ class RegisterCubit extends Cubit<RegisterState> {
   }
 
   Future<void> register() async {
-    if (!formKey.currentState!.validate()) return;
-
-    emit(RegisterLoading());
-
-    try {
-      // Firebase registration
-      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-
-      // Save username in Firestore
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .set({
-        'username': nameController.text.trim(),
-        'email': emailController.text.trim(),
-      });
-
-      emit(RegisterSuccess());
-    } on FirebaseAuthException catch (e) {
-      String errorMessage = 'Registration failed';
-      if (e.code == 'email-already-in-use') {
-        errorMessage = 'Email is already registered';
-      } else if (e.code == 'weak-password') {
-        errorMessage = 'Password is too weak';
+    {
+      if (!formKey.currentState!.validate()) {
+        return;
       }
-      emit(RegisterFailure(errorMessage));
-    } catch (e) {
-      emit(RegisterFailure(e.toString()));
+      emit(RegisterLoading());
+      AuthRepo repo = AuthRepo.instance;
+      var response = await repo.register(
+          phone: phoneController.text,
+          name: nameController.text,
+          email: emailController.text,
+          password: passwordController.text,
+          image: image);
+      response.fold((String error) => emit(RegisterFailure(error)),
+          (userModel) => emit(RegisterSuccess()));
     }
   }
 }
